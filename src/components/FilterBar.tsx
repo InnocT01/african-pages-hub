@@ -36,7 +36,7 @@ const FilterBar = ({ activeOrigin, activeGenre, activeType, onOriginChange, onGe
               className="rounded-full text-xs shrink-0"
               onClick={() => onChange(item)}
             >
-              {item === "ebook" ? t("filter.ebook") : item === "audio" ? t("filter.audio") : item === "physical" ? t("filter.physical") : item}
+              {["ebook", "audio", "physical", "bd"].includes(item) ? t(`filter.${item}`) : item}
             </Button>
           ))}
         </div>
@@ -49,7 +49,7 @@ const FilterBar = ({ activeOrigin, activeGenre, activeType, onOriginChange, onGe
     <div className="space-y-4 rounded-xl border border-border bg-card p-4 md:p-6">
       <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
         <PillGroup label={t("filter.origin")} items={origins.slice(0, 6)} active={activeOrigin} onChange={onOriginChange} />
-        <PillGroup label={t("filter.genre")} items={genres.slice(0, 5)} active={activeGenre} onChange={onGenreChange} />
+        <PillGroup label={t("filter.genre")} items={genres.slice(0, 6)} active={activeGenre} onChange={onGenreChange} />
         <PillGroup label={t("filter.type")} items={[...contentTypes]} active={activeType} onChange={onTypeChange} />
       </div>
     </div>

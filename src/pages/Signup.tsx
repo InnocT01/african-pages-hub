@@ -10,6 +10,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth, UserRole } from "@/contexts/AuthContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PenTool, BookOpen } from "lucide-react";
+import { toast } from "sonner";
 
 const Signup = () => {
   const { t } = useLanguage();
@@ -24,9 +25,14 @@ const Signup = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    await signup(email, password, name, role);
-    setLoading(false);
-    navigate(role === "creator" ? "/creator" : "/");
+    try {
+      await signup(email, password, name, role);
+      navigate(role === "creator" ? "/creator" : "/");
+    } catch (err: any) {
+      toast.error(t("auth.error"), { description: err.message });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -49,10 +55,9 @@ const Signup = () => {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="password">{t("auth.password")}</Label>
-                <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required className="rounded-lg" />
+                <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6} className="rounded-lg" />
               </div>
 
-              {/* Role selector */}
               <div className="space-y-3">
                 <Label>{t("auth.role")}</Label>
                 <RadioGroup value={role} onValueChange={(v) => setRole(v as UserRole)} className="grid grid-cols-2 gap-3">

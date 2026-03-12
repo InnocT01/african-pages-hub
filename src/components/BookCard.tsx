@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { ShoppingCart, Headphones, BookOpen, Package } from "lucide-react";
+import { ShoppingCart, Headphones, BookOpen, Package, Image } from "lucide-react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -12,12 +12,13 @@ const typeIcons = {
   ebook: BookOpen,
   audio: Headphones,
   physical: Package,
+  bd: Image,
 };
 
 const BookCard = ({ book }: { book: Book }) => {
   const { addToCart } = useCart();
   const { t } = useLanguage();
-  const TypeIcon = typeIcons[book.type];
+  const TypeIcon = typeIcons[book.type] || BookOpen;
 
   return (
     <motion.div
@@ -30,11 +31,15 @@ const BookCard = ({ book }: { book: Book }) => {
           <AspectRatio ratio={2 / 3}>
             <img src={book.cover} alt={book.title} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
           </AspectRatio>
-          {/* Type badge */}
           <Badge className="absolute top-2 right-2 bg-background/90 text-foreground backdrop-blur text-[10px] gap-1">
             <TypeIcon className="h-3 w-3" />
             {t(`filter.${book.type}`)}
           </Badge>
+          {book.language && book.language !== "fr" && book.language !== "en" && (
+            <Badge className="absolute top-2 left-2 bg-accent text-accent-foreground text-[10px]">
+              {book.language.toUpperCase()}
+            </Badge>
+          )}
         </div>
       </Link>
       <div className="mt-3 space-y-1 px-1">
