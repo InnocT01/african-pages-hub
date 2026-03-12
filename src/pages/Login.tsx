@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { toast } from "sonner";
 
 const Login = () => {
   const { t } = useLanguage();
@@ -20,9 +21,14 @@ const Login = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    await login(email, password);
-    setLoading(false);
-    navigate("/");
+    try {
+      await login(email, password);
+      navigate("/");
+    } catch (err: any) {
+      toast.error(t("auth.error"), { description: err.message });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (

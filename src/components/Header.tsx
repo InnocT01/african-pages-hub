@@ -22,6 +22,8 @@ const Header = () => {
     { key: "nav.literature", path: "/catalog?category=literature" },
     { key: "nav.youth", path: "/catalog?category=youth" },
     { key: "nav.diaspora", path: "/catalog?category=diaspora" },
+    { key: "nav.national_languages", path: "/catalog?category=national_languages" },
+    { key: "nav.bd", path: "/catalog?genre=BD" },
   ];
 
   const handleSearch = (e: React.FormEvent) => {
@@ -34,14 +36,11 @@ const Header = () => {
   return (
     <header className="sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
       <div className="container mx-auto px-4">
-        {/* Top bar */}
         <div className="flex h-16 items-center justify-between gap-4">
-          {/* Logo */}
           <Link to="/" className="flex shrink-0 items-center gap-2">
             <img src={logoImg} alt="KitabuShop" className="h-9 w-auto" />
           </Link>
 
-          {/* Search - desktop */}
           <form onSubmit={handleSearch} className="hidden flex-1 max-w-xl md:flex">
             <div className="relative w-full">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -54,9 +53,7 @@ const Header = () => {
             </div>
           </form>
 
-          {/* Right actions */}
           <div className="flex items-center gap-2">
-            {/* Lang toggle */}
             <Button
               variant="ghost"
               size="sm"
@@ -67,7 +64,6 @@ const Header = () => {
               {lang === "fr" ? "EN" : "FR"}
             </Button>
 
-            {/* Auth */}
             {isAuthenticated ? (
               <>
                 <Button variant="ghost" size="sm" asChild className="hidden sm:flex">
@@ -76,7 +72,7 @@ const Header = () => {
                     {t("nav.dashboard")}
                   </Link>
                 </Button>
-                <Button variant="ghost" size="sm" onClick={logout} className="hidden sm:flex">
+                <Button variant="ghost" size="sm" onClick={() => logout()} className="hidden sm:flex">
                   <LogOut className="h-4 w-4" />
                 </Button>
               </>
@@ -91,7 +87,6 @@ const Header = () => {
               </>
             )}
 
-            {/* Cart */}
             <Button variant="ghost" size="icon" asChild className="relative">
               <Link to="/cart">
                 <ShoppingCart className="h-5 w-5" />
@@ -103,14 +98,12 @@ const Header = () => {
               </Link>
             </Button>
 
-            {/* Mobile menu */}
             <Button variant="ghost" size="icon" className="md:hidden" onClick={() => setMobileOpen(!mobileOpen)}>
               {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </Button>
           </div>
         </div>
 
-        {/* Category nav - desktop */}
         <nav className="hidden md:flex items-center gap-6 pb-2 text-sm">
           <Link to="/catalog" className="font-medium text-foreground hover:text-primary transition-colors">
             {t("nav.catalog")}
@@ -123,7 +116,6 @@ const Header = () => {
         </nav>
       </div>
 
-      {/* Mobile menu */}
       {mobileOpen && (
         <div className="md:hidden border-t border-border bg-background px-4 pb-4 pt-2">
           <form onSubmit={handleSearch} className="mb-3">
@@ -140,7 +132,7 @@ const Header = () => {
               </Link>
             ))}
             <hr className="my-2 border-border" />
-            <Button variant="ghost" size="sm" onClick={() => { setLang(lang === "fr" ? "en" : "fr"); }} className="justify-start">
+            <Button variant="ghost" size="sm" onClick={() => setLang(lang === "fr" ? "en" : "fr")} className="justify-start">
               <Globe className="h-4 w-4 mr-2" />{lang === "fr" ? "English" : "Français"}
             </Button>
             {isAuthenticated ? (

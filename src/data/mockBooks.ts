@@ -9,11 +9,14 @@ export interface Book {
   cover: string;
   genre: string;
   origin: string;
-  type: "ebook" | "audio" | "physical";
+  type: "ebook" | "audio" | "physical" | "bd";
   category: string;
   rating: number;
   reviews: number;
   featured?: boolean;
+  language?: string;
+  pageCount?: number;
+  durationMinutes?: number;
 }
 
 export const mockBooks: Book[] = [
@@ -33,6 +36,7 @@ export const mockBooks: Book[] = [
     rating: 4.8,
     reviews: 234,
     featured: true,
+    pageCount: 256,
   },
   {
     id: "2",
@@ -50,6 +54,7 @@ export const mockBooks: Book[] = [
     rating: 4.9,
     reviews: 567,
     featured: true,
+    pageCount: 320,
   },
   {
     id: "3",
@@ -66,6 +71,7 @@ export const mockBooks: Book[] = [
     category: "literature",
     rating: 4.7,
     reviews: 189,
+    pageCount: 192,
   },
   {
     id: "4",
@@ -82,6 +88,7 @@ export const mockBooks: Book[] = [
     category: "education",
     rating: 4.5,
     reviews: 78,
+    pageCount: 480,
   },
   {
     id: "5",
@@ -98,6 +105,7 @@ export const mockBooks: Book[] = [
     category: "youth",
     rating: 4.6,
     reviews: 312,
+    pageCount: 64,
   },
   {
     id: "6",
@@ -114,6 +122,7 @@ export const mockBooks: Book[] = [
     category: "literature",
     rating: 4.4,
     reviews: 145,
+    pageCount: 288,
   },
   {
     id: "7",
@@ -131,6 +140,7 @@ export const mockBooks: Book[] = [
     rating: 4.6,
     reviews: 201,
     featured: true,
+    pageCount: 224,
   },
   {
     id: "8",
@@ -147,6 +157,7 @@ export const mockBooks: Book[] = [
     category: "literature",
     rating: 4.5,
     reviews: 167,
+    durationMinutes: 340,
   },
   {
     id: "9",
@@ -163,6 +174,7 @@ export const mockBooks: Book[] = [
     category: "literature",
     rating: 4.3,
     reviews: 98,
+    pageCount: 272,
   },
   {
     id: "10",
@@ -179,6 +191,7 @@ export const mockBooks: Book[] = [
     category: "education",
     rating: 4.2,
     reviews: 56,
+    pageCount: 512,
   },
   {
     id: "11",
@@ -195,6 +208,7 @@ export const mockBooks: Book[] = [
     category: "youth",
     rating: 4.8,
     reviews: 278,
+    pageCount: 96,
   },
   {
     id: "12",
@@ -212,6 +226,7 @@ export const mockBooks: Book[] = [
     rating: 4.4,
     reviews: 132,
     featured: true,
+    pageCount: 304,
   },
   {
     id: "13",
@@ -228,6 +243,7 @@ export const mockBooks: Book[] = [
     category: "diaspora",
     rating: 4.6,
     reviews: 89,
+    pageCount: 416,
   },
   {
     id: "14",
@@ -244,6 +260,7 @@ export const mockBooks: Book[] = [
     category: "education",
     rating: 4.7,
     reviews: 198,
+    durationMinutes: 720,
   },
   {
     id: "15",
@@ -256,10 +273,11 @@ export const mockBooks: Book[] = [
     cover: "https://images.unsplash.com/photo-1618666012174-83b441c0bc76?w=400&h=600&fit=crop",
     genre: "BD",
     origin: "Nigeria",
-    type: "ebook",
+    type: "bd",
     category: "youth",
     rating: 4.9,
     reviews: 345,
+    pageCount: 48,
   },
   {
     id: "16",
@@ -276,10 +294,166 @@ export const mockBooks: Book[] = [
     category: "literature",
     rating: 4.5,
     reviews: 112,
+    pageCount: 352,
+  },
+  // National languages books
+  {
+    id: "17",
+    title: "Masomo ya Kiswahili",
+    author: "Prof. Juma Bakari",
+    description_fr: "Manuel complet de grammaire et littérature en swahili pour apprenants intermédiaires et avancés.",
+    description_en: "Complete Swahili grammar and literature textbook for intermediate and advanced learners.",
+    price: 22.99,
+    currency: "USD",
+    cover: "https://images.unsplash.com/photo-1506880018603-83d5b814b5a6?w=400&h=600&fit=crop",
+    genre: "Langue",
+    origin: "Kenya",
+    type: "ebook",
+    category: "national_languages",
+    rating: 4.6,
+    reviews: 156,
+    language: "sw",
+    pageCount: 384,
+  },
+  {
+    id: "18",
+    title: "Nzela ya Bomoi",
+    author: "Abbé Stefano Kaoze",
+    description_fr: "Récits philosophiques en lingala explorant le sens de la vie à travers la sagesse bantoue.",
+    description_en: "Philosophical tales in Lingala exploring the meaning of life through Bantu wisdom.",
+    price: 14.99,
+    currency: "USD",
+    cover: "https://images.unsplash.com/photo-1516979187457-637abb4f9353?w=400&h=600&fit=crop",
+    genre: "Philosophie",
+    origin: "RDC",
+    type: "ebook",
+    category: "national_languages",
+    rating: 4.3,
+    reviews: 67,
+    language: "ln",
+    pageCount: 208,
+  },
+  {
+    id: "19",
+    title: "Hadithi za Mama Afrika",
+    author: "Bi Msafiri Zawose",
+    description_fr: "Contes audio traditionnels narrés en swahili, transmettant la richesse orale de l'Afrique de l'Est.",
+    description_en: "Traditional audio tales narrated in Swahili, transmitting the oral richness of East Africa.",
+    price: 9.99,
+    currency: "USD",
+    cover: "https://images.unsplash.com/photo-1478720568477-152d9b164e26?w=400&h=600&fit=crop",
+    genre: "Conte",
+    origin: "Tanzania",
+    type: "audio",
+    category: "national_languages",
+    rating: 4.8,
+    reviews: 234,
+    language: "sw",
+    durationMinutes: 180,
+  },
+  // More BD
+  {
+    id: "20",
+    title: "Aya de Yopougon",
+    author: "Marguerite Abouet",
+    description_fr: "BD culte racontant la vie quotidienne d'Aya et ses amies dans le quartier populaire de Yopougon à Abidjan.",
+    description_en: "Cult comic telling the daily life of Aya and her friends in the popular Yopougon neighborhood in Abidjan.",
+    price: 13.99,
+    currency: "USD",
+    cover: "https://images.unsplash.com/photo-1611532736597-de2d4265fba3?w=400&h=600&fit=crop",
+    genre: "BD",
+    origin: "Côte d'Ivoire",
+    type: "bd",
+    category: "literature",
+    rating: 4.7,
+    reviews: 412,
+    pageCount: 112,
+  },
+  {
+    id: "21",
+    title: "Akissi - Attaque de chats",
+    author: "Marguerite Abouet",
+    description_fr: "Les aventures hilarantes de la petite Akissi dans les rues animées d'Abidjan.",
+    description_en: "The hilarious adventures of little Akissi in the lively streets of Abidjan.",
+    price: 10.99,
+    currency: "USD",
+    cover: "https://images.unsplash.com/photo-1594312915251-48db9280c8f0?w=400&h=600&fit=crop",
+    genre: "BD",
+    origin: "Côte d'Ivoire",
+    type: "bd",
+    category: "youth",
+    rating: 4.8,
+    reviews: 287,
+    pageCount: 48,
+  },
+  // More audio
+  {
+    id: "22",
+    title: "Voix d'Afrique - Poésie orale",
+    author: "Amadou Hampâté Bâ",
+    description_fr: "Collection de poèmes et récits traditionnels d'Afrique de l'Ouest, enregistrés par le maître de l'oralité.",
+    description_en: "Collection of traditional poems and tales from West Africa, recorded by the master of oral tradition.",
+    price: 16.99,
+    currency: "USD",
+    cover: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400&h=600&fit=crop",
+    genre: "Poésie",
+    origin: "Mali",
+    type: "audio",
+    category: "literature",
+    rating: 4.9,
+    reviews: 189,
+    durationMinutes: 420,
+  },
+  {
+    id: "23",
+    title: "Histoires du soir africaines",
+    author: "Collectif",
+    description_fr: "25 contes audio pour enfants, racontés avec musique traditionnelle et effets sonores immersifs.",
+    description_en: "25 audio tales for children, told with traditional music and immersive sound effects.",
+    price: 11.99,
+    currency: "USD",
+    cover: "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=400&h=600&fit=crop",
+    genre: "Conte",
+    origin: "Sénégal",
+    type: "audio",
+    category: "youth",
+    rating: 4.7,
+    reviews: 356,
+    durationMinutes: 300,
+  },
+  {
+    id: "24",
+    title: "Lingala ya Mokili",
+    author: "Prof. Lisala Bokamba",
+    description_fr: "Grammaire complète du lingala avec exercices audio pour une maîtrise parfaite de la langue.",
+    description_en: "Complete Lingala grammar with audio exercises for perfect language mastery.",
+    price: 19.99,
+    currency: "USD",
+    cover: "https://images.unsplash.com/photo-1457369804613-52c61a468e7d?w=400&h=600&fit=crop",
+    genre: "Langue",
+    origin: "RDC",
+    type: "audio",
+    category: "national_languages",
+    rating: 4.4,
+    reviews: 123,
+    language: "ln",
+    durationMinutes: 600,
   },
 ];
 
-export const origins = ["RDC", "Kenya", "Sénégal", "Nigeria", "Guinée", "Côte d'Ivoire", "Congo", "Mali", "Cameroun", "Afrique du Sud"];
-export const genres = ["Roman", "Manuel", "Conte", "Essai", "BD", "Anthologie", "Langue", "Philosophie"];
-export const contentTypes = ["ebook", "audio", "physical"] as const;
-export const categories = ["literature", "education", "youth", "diaspora"] as const;
+export const origins = ["RDC", "Kenya", "Sénégal", "Nigeria", "Guinée", "Côte d'Ivoire", "Congo", "Mali", "Cameroun", "Afrique du Sud", "Tanzania"];
+export const genres = ["Roman", "Manuel", "Conte", "Essai", "BD", "Anthologie", "Langue", "Philosophie", "Poésie"];
+export const contentTypes = ["ebook", "audio", "physical", "bd"] as const;
+export const categories = ["literature", "education", "youth", "diaspora", "national_languages"] as const;
+export const bookLanguages = [
+  { code: "fr", label_fr: "Français", label_en: "French" },
+  { code: "en", label_fr: "Anglais", label_en: "English" },
+  { code: "sw", label_fr: "Swahili", label_en: "Swahili" },
+  { code: "ln", label_fr: "Lingala", label_en: "Lingala" },
+  { code: "wo", label_fr: "Wolof", label_en: "Wolof" },
+  { code: "ha", label_fr: "Haoussa", label_en: "Hausa" },
+  { code: "yo", label_fr: "Yoruba", label_en: "Yoruba" },
+  { code: "ig", label_fr: "Igbo", label_en: "Igbo" },
+  { code: "am", label_fr: "Amharique", label_en: "Amharic" },
+  { code: "zu", label_fr: "Zoulou", label_en: "Zulu" },
+];

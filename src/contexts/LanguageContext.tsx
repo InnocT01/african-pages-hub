@@ -14,6 +14,8 @@ const translations: Record<string, Record<Language, string>> = {
   "nav.literature": { fr: "Littérature", en: "Literature" },
   "nav.youth": { fr: "Jeunesse", en: "Youth" },
   "nav.diaspora": { fr: "Diaspora", en: "Diaspora" },
+  "nav.national_languages": { fr: "Langues nationales", en: "National Languages" },
+  "nav.bd": { fr: "Bandes dessinées", en: "Comics" },
   "nav.search": { fr: "Rechercher un livre, un auteur...", en: "Search a book, an author..." },
   "nav.login": { fr: "Connexion", en: "Sign In" },
   "nav.signup": { fr: "Inscription", en: "Sign Up" },
@@ -23,10 +25,8 @@ const translations: Record<string, Record<Language, string>> = {
   "nav.catalog": { fr: "Catalogue", en: "Catalog" },
 
   // Hero
-  "hero.title": { fr: "La Bibliothèque du Futur Africain", en: "The Library of Africa's Future" },
-  "hero.subtitle": { fr: "Découvrez, publiez et partagez les plus belles œuvres littéraires d'Afrique.", en: "Discover, publish and share Africa's finest literary works." },
-  "hero.cta.browse": { fr: "Explorer le catalogue", en: "Browse Catalog" },
-  "hero.cta.publish": { fr: "Publier mon œuvre", en: "Publish My Work" },
+  "hero.featured": { fr: "Livre vedette", en: "Featured Book" },
+  "hero.details": { fr: "Voir les détails", en: "View Details" },
 
   // Filters
   "filter.all": { fr: "Tous", en: "All" },
@@ -34,8 +34,9 @@ const translations: Record<string, Record<Language, string>> = {
   "filter.genre": { fr: "Genre", en: "Genre" },
   "filter.type": { fr: "Type", en: "Type" },
   "filter.ebook": { fr: "E-book", en: "E-book" },
-  "filter.audio": { fr: "Audio", en: "Audio" },
+  "filter.audio": { fr: "Livre audio", en: "Audiobook" },
   "filter.physical": { fr: "Physique", en: "Physical" },
+  "filter.bd": { fr: "BD", en: "Comic" },
 
   // Sections
   "section.new": { fr: "Nouveautés", en: "New Releases" },
@@ -44,6 +45,9 @@ const translations: Record<string, Record<Language, string>> = {
   "section.education": { fr: "Éducation", en: "Education" },
   "section.youth": { fr: "Jeunesse", en: "Youth" },
   "section.diaspora": { fr: "Diaspora", en: "Diaspora" },
+  "section.national_languages": { fr: "Langues nationales", en: "National Languages" },
+  "section.bd": { fr: "Bandes dessinées", en: "Comics" },
+  "section.audiobooks": { fr: "Livres audio", en: "Audiobooks" },
   "section.viewall": { fr: "Voir tout", en: "View All" },
 
   // Creator CTA
@@ -76,6 +80,7 @@ const translations: Record<string, Record<Language, string>> = {
   "auth.login.link": { fr: "Déjà un compte ? Connectez-vous", en: "Already have an account? Sign In" },
   "auth.signup.link": { fr: "Pas de compte ? Inscrivez-vous", en: "No account? Sign Up" },
   "auth.forgot": { fr: "Mot de passe oublié ?", en: "Forgot password?" },
+  "auth.error": { fr: "Erreur d'authentification", en: "Authentication error" },
 
   // Book Detail
   "book.addtocart": { fr: "Ajouter au panier", en: "Add to Cart" },
@@ -85,6 +90,8 @@ const translations: Record<string, Record<Language, string>> = {
   "book.related": { fr: "Livres similaires", en: "Related Books" },
   "book.by": { fr: "par", en: "by" },
   "book.description": { fr: "Description", en: "Description" },
+  "book.pages": { fr: "pages", en: "pages" },
+  "book.minutes": { fr: "minutes", en: "minutes" },
 
   // Cart
   "cart.title": { fr: "Mon panier", en: "My Cart" },
@@ -113,12 +120,39 @@ const translations: Record<string, Record<Language, string>> = {
   "creator.sales": { fr: "Ventes", en: "Sales" },
   "creator.views": { fr: "Vues", en: "Views" },
   "creator.books": { fr: "Livres publiés", en: "Published Books" },
+  "creator.welcome": { fr: "Bienvenue sur votre espace créateur", en: "Welcome to your creator space" },
+  "creator.booktype": { fr: "Type d'œuvre", en: "Work Type" },
+  "creator.booktype.roman": { fr: "📖 Roman / Essai", en: "📖 Novel / Essay" },
+  "creator.booktype.bd": { fr: "🎨 Bande dessinée", en: "🎨 Comic Book" },
+  "creator.booktype.audio": { fr: "🎧 Livre audio", en: "🎧 Audiobook" },
+  "creator.booktype.manual": { fr: "📚 Manuel scolaire", en: "📚 Textbook" },
+  "creator.form.title": { fr: "Titre de l'œuvre", en: "Title" },
+  "creator.form.isbn": { fr: "ISBN (optionnel)", en: "ISBN (optional)" },
+  "creator.form.pages": { fr: "Nombre de pages", en: "Page count" },
+  "creator.form.duration": { fr: "Durée (minutes)", en: "Duration (minutes)" },
+  "creator.form.narrator": { fr: "Narrateur", en: "Narrator" },
+  "creator.form.cover": { fr: "Couverture", en: "Cover Image" },
+  "creator.form.manuscript": { fr: "Manuscrit (PDF/EPUB)", en: "Manuscript (PDF/EPUB)" },
+  "creator.form.audiofile": { fr: "Fichier audio (MP3/M4A)", en: "Audio File (MP3/M4A)" },
+  "creator.form.bdpages": { fr: "Planches de la BD", en: "Comic Pages" },
+  "creator.form.publish": { fr: "Publier l'œuvre", en: "Publish" },
+  "creator.form.savedraft": { fr: "Sauvegarder le brouillon", en: "Save Draft" },
+  "creator.status.draft": { fr: "Brouillon", en: "Draft" },
+  "creator.status.published": { fr: "Publié", en: "Published" },
+  "creator.status.archived": { fr: "Archivé", en: "Archived" },
 
   // Reader Dashboard
   "reader.library": { fr: "Ma bibliothèque", en: "My Library" },
   "reader.orders": { fr: "Mes commandes", en: "My Orders" },
   "reader.wishlist": { fr: "Liste de souhaits", en: "Wishlist" },
   "reader.settings": { fr: "Paramètres", en: "Settings" },
+  "reader.welcome": { fr: "Bienvenue dans votre espace lecteur", en: "Welcome to your reading space" },
+  "reader.reading": { fr: "En cours de lecture", en: "Currently Reading" },
+  "reader.finished": { fr: "Terminé", en: "Finished" },
+  "reader.nobooks": { fr: "Vous n'avez pas encore de livres", en: "You don't have any books yet" },
+  "reader.startreading": { fr: "Lire", en: "Read" },
+  "reader.download": { fr: "Télécharger", en: "Download" },
+  "reader.listen": { fr: "Écouter", en: "Listen" },
 
   // Common
   "common.price": { fr: "Prix", en: "Price" },
@@ -129,6 +163,8 @@ const translations: Record<string, Record<Language, string>> = {
   "common.edit": { fr: "Modifier", en: "Edit" },
   "common.loading": { fr: "Chargement...", en: "Loading..." },
   "common.back": { fr: "Retour", en: "Back" },
+  "common.noresults": { fr: "Aucun résultat", en: "No results" },
+  "common.language": { fr: "Langue", en: "Language" },
 };
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
