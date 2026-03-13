@@ -1,24 +1,27 @@
 import { Link } from "react-router-dom";
-import { ShoppingCart, Headphones, BookOpen, Package, Image } from "lucide-react";
+import { ShoppingCart, Headphones, BookOpen, Package, Image, FileText, GraduationCap, Newspaper, Star } from "lucide-react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useCart } from "@/contexts/CartContext";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { Book } from "@/data/mockBooks";
+import type { Book } from "@/types/book";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 
-const typeIcons = {
+const typeIcons: Record<string, React.ElementType> = {
   ebook: BookOpen,
   audio: Headphones,
   physical: Package,
   bd: Image,
+  manuel_scolaire: GraduationCap,
+  revue: FileText,
+  article: Newspaper,
 };
 
 const BookCard = ({ book }: { book: Book }) => {
   const { addToCart } = useCart();
   const { t } = useLanguage();
-  const TypeIcon = typeIcons[book.type] || BookOpen;
+  const TypeIcon = typeIcons[book.content_type] || BookOpen;
 
   return (
     <motion.div
@@ -29,15 +32,22 @@ const BookCard = ({ book }: { book: Book }) => {
       <Link to={`/book/${book.id}`} className="block">
         <div className="relative overflow-hidden rounded-xl bg-card shadow-sm border border-border transition-shadow group-hover:shadow-lg">
           <AspectRatio ratio={2 / 3}>
-            <img src={book.cover} alt={book.title} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
+            {book.cover_url ? (
+              <img src={book.cover_url} alt={book.title} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
+            ) : (
+              <div className="h-full w-full bg-muted flex items-center justify-center">
+                <BookOpen className="h-12 w-12 text-muted-foreground/30" />
+              </div>
+            )}
           </AspectRatio>
           <Badge className="absolute top-2 right-2 bg-background/90 text-foreground backdrop-blur text-[10px] gap-1">
             <TypeIcon className="h-3 w-3" />
-            {t(`filter.${book.type}`)}
+            {t(`filter.${book.content_type}`)}
           </Badge>
-          {book.language && book.language !== "fr" && book.language !== "en" && (
-            <Badge className="absolute top-2 left-2 bg-accent text-accent-foreground text-[10px]">
-              {book.language.toUpperCase()}
+          {book.featured && (
+            <Badge className="absolute top-2 left-2 bg-primary text-primary-foreground text-[10px] gap-1">
+              <Star className="h-3 w-3 fill-current" />
+              Vedette
             </Badge>
           )}
         </div>
@@ -48,7 +58,17 @@ const BookCard = ({ book }: { book: Book }) => {
             {book.title}
           </h3>
         </Link>
-        <p className="text-xs text-muted-foreground">{book.author}</p>
+        <p className="text-xs text-muted-foreground">{book.author_name || "Auteur inconnu"}</p>
+        {(book.rating ?? 0) > 0 && (
+          <div className="flex items-center gap-1">
+            <div className="flex">
+              {[...Array(5)].map((_, i) => (
+                <Star key={i} className={`h-3 w-3 ${i < Math.floor(book.rating || 0) ? "fill-primary text-primary" : "text-border"}`} />
+              ))}
+            </div>
+            <span className="text-[10px] text-muted-foreground">({book.review_count || 0})</span>
+          </div>
+        )}
         <div className="flex items-center justify-between pt-1">
           <span className="font-sans text-base font-bold tabular-nums text-primary">
             ${book.price.toFixed(2)}

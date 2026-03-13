@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { Mail, MapPin, Facebook } from "lucide-react";
 import logoImg from "@/assets/logo-kitabushop.png";
 
 const Footer = () => {
@@ -14,7 +15,26 @@ const Footer = () => {
           {/* Brand */}
           <div className="space-y-4">
             <img src={logoImg} alt="KitabuShop" className="h-8 w-auto brightness-0 invert" />
-            <p className="text-sm opacity-70">{t("footer.tagline")}</p>
+            <p className="text-sm opacity-70">{t("footer.description")}</p>
+            <div className="flex items-center gap-3">
+              <a href="https://web.facebook.com/profile.php?id=61579692684157" target="_blank" rel="noopener noreferrer" className="opacity-60 hover:opacity-100 transition-opacity">
+                <Facebook className="h-5 w-5" />
+              </a>
+            </div>
+          </div>
+
+          {/* Contact */}
+          <div className="space-y-3">
+            <h4 className="font-sans text-sm font-semibold uppercase tracking-wider opacity-50">Contact</h4>
+            <div className="flex flex-col gap-3 text-sm opacity-70">
+              <a href="mailto:kitabushop5@gmail.com" className="flex items-center gap-2 hover:opacity-100 transition-opacity">
+                <Mail className="h-4 w-4 shrink-0" />kitabushop5@gmail.com
+              </a>
+              <div className="flex items-start gap-2">
+                <MapPin className="h-4 w-4 shrink-0 mt-0.5" />
+                <span>Q. Office, avenue du Collège, 076, Goma-RDC</span>
+              </div>
+            </div>
           </div>
 
           {/* Links */}
@@ -22,18 +42,9 @@ const Footer = () => {
             <h4 className="font-sans text-sm font-semibold uppercase tracking-wider opacity-50">KitabuShop</h4>
             <div className="flex flex-col gap-2 text-sm opacity-70">
               <Link to="/catalog" className="hover:opacity-100 transition-opacity">{t("nav.catalog")}</Link>
-              <Link to="/catalog?category=diaspora" className="hover:opacity-100 transition-opacity">{t("nav.diaspora")}</Link>
-              <Link to="#" className="hover:opacity-100 transition-opacity">{t("footer.about")}</Link>
-              <Link to="#" className="hover:opacity-100 transition-opacity">{t("footer.contact")}</Link>
-            </div>
-          </div>
-
-          {/* Legal */}
-          <div className="space-y-3">
-            <h4 className="font-sans text-sm font-semibold uppercase tracking-wider opacity-50">Legal</h4>
-            <div className="flex flex-col gap-2 text-sm opacity-70">
-              <Link to="#" className="hover:opacity-100 transition-opacity">{t("footer.terms")}</Link>
-              <Link to="#" className="hover:opacity-100 transition-opacity">{t("footer.privacy")}</Link>
+              <Link to="/about" className="hover:opacity-100 transition-opacity">{t("footer.about")}</Link>
+              <Link to="/terms" className="hover:opacity-100 transition-opacity">{t("footer.terms")}</Link>
+              <Link to="/privacy" className="hover:opacity-100 transition-opacity">{t("footer.privacy")}</Link>
             </div>
           </div>
 

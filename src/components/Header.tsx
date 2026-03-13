@@ -23,7 +23,9 @@ const Header = () => {
     { key: "nav.youth", path: "/catalog?category=youth" },
     { key: "nav.diaspora", path: "/catalog?category=diaspora" },
     { key: "nav.national_languages", path: "/catalog?category=national_languages" },
-    { key: "nav.bd", path: "/catalog?genre=BD" },
+    { key: "nav.bd", path: "/catalog?type=bd" },
+    { key: "nav.manuels", path: "/catalog?category=manuels_scolaires" },
+    { key: "nav.revues", path: "/catalog?category=revues_scientifiques" },
   ];
 
   const handleSearch = (e: React.FormEvent) => {
@@ -44,33 +46,19 @@ const Header = () => {
           <form onSubmit={handleSearch} className="hidden flex-1 max-w-xl md:flex">
             <div className="relative w-full">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder={t("nav.search")}
-                className="pl-10 rounded-full border-border bg-muted/50 focus-visible:ring-primary"
-              />
+              <Input value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder={t("nav.search")} className="pl-10 rounded-full border-border bg-muted/50 focus-visible:ring-primary" />
             </div>
           </form>
 
           <div className="flex items-center gap-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setLang(lang === "fr" ? "en" : "fr")}
-              className="hidden sm:flex items-center gap-1 text-xs font-medium"
-            >
-              <Globe className="h-4 w-4" />
-              {lang === "fr" ? "EN" : "FR"}
+            <Button variant="ghost" size="sm" onClick={() => setLang(lang === "fr" ? "en" : "fr")} className="hidden sm:flex items-center gap-1 text-xs font-medium">
+              <Globe className="h-4 w-4" />{lang === "fr" ? "EN" : "FR"}
             </Button>
 
             {isAuthenticated ? (
               <>
                 <Button variant="ghost" size="sm" asChild className="hidden sm:flex">
-                  <Link to={dashboardPath}>
-                    <User className="h-4 w-4 mr-1" />
-                    {t("nav.dashboard")}
-                  </Link>
+                  <Link to={dashboardPath}><User className="h-4 w-4 mr-1" />{t("nav.dashboard")}</Link>
                 </Button>
                 <Button variant="ghost" size="sm" onClick={() => logout()} className="hidden sm:flex">
                   <LogOut className="h-4 w-4" />
@@ -91,9 +79,7 @@ const Header = () => {
               <Link to="/cart">
                 <ShoppingCart className="h-5 w-5" />
                 {itemCount > 0 && (
-                  <Badge className="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 flex items-center justify-center text-[10px] bg-primary text-primary-foreground">
-                    {itemCount}
-                  </Badge>
+                  <Badge className="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 flex items-center justify-center text-[10px] bg-primary text-primary-foreground">{itemCount}</Badge>
                 )}
               </Link>
             </Button>
@@ -104,14 +90,10 @@ const Header = () => {
           </div>
         </div>
 
-        <nav className="hidden md:flex items-center gap-6 pb-2 text-sm">
-          <Link to="/catalog" className="font-medium text-foreground hover:text-primary transition-colors">
-            {t("nav.catalog")}
-          </Link>
+        <nav className="hidden md:flex items-center gap-6 pb-2 text-sm overflow-x-auto">
+          <Link to="/catalog" className="font-medium text-foreground hover:text-primary transition-colors shrink-0">{t("nav.catalog")}</Link>
           {categories.map((cat) => (
-            <Link key={cat.key} to={cat.path} className="text-muted-foreground hover:text-foreground transition-colors">
-              {t(cat.key)}
-            </Link>
+            <Link key={cat.key} to={cat.path} className="text-muted-foreground hover:text-foreground transition-colors shrink-0">{t(cat.key)}</Link>
           ))}
         </nav>
       </div>
@@ -127,9 +109,7 @@ const Header = () => {
           <div className="flex flex-col gap-2">
             <Link to="/catalog" className="py-2 font-medium" onClick={() => setMobileOpen(false)}>{t("nav.catalog")}</Link>
             {categories.map((cat) => (
-              <Link key={cat.key} to={cat.path} className="py-2 text-muted-foreground" onClick={() => setMobileOpen(false)}>
-                {t(cat.key)}
-              </Link>
+              <Link key={cat.key} to={cat.path} className="py-2 text-muted-foreground" onClick={() => setMobileOpen(false)}>{t(cat.key)}</Link>
             ))}
             <hr className="my-2 border-border" />
             <Button variant="ghost" size="sm" onClick={() => setLang(lang === "fr" ? "en" : "fr")} className="justify-start">

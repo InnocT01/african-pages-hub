@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useCallback } from "react";
-import { Book } from "@/data/mockBooks";
+import type { Book } from "@/types/book";
 
 interface CartItem {
   book: Book;

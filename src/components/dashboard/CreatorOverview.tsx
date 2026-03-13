@@ -1,15 +1,22 @@
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { BarChart3, BookOpen, Eye, DollarSign, TrendingUp } from "lucide-react";
+import { useMyBooks } from "@/hooks/useBooks";
+import { BookOpen, Eye, DollarSign, TrendingUp } from "lucide-react";
 
 const CreatorOverview = () => {
   const { t } = useLanguage();
+  const { data: books = [] } = useMyBooks();
+
+  const totalSales = books.reduce((sum, b) => sum + (b.sales_count || 0), 0);
+  const totalRevenue = books.reduce((sum, b) => sum + (b.sales_count || 0) * b.price, 0);
+  const totalReviews = books.reduce((sum, b) => sum + (b.review_count || 0), 0);
+  const publishedCount = books.filter(b => b.status === "published").length;
 
   const stats = [
-    { key: "creator.revenue", value: "$2,847", icon: DollarSign, change: "+12%" },
-    { key: "creator.sales", value: "142", icon: TrendingUp, change: "+8%" },
-    { key: "creator.views", value: "3,284", icon: Eye, change: "+23%" },
-    { key: "creator.books", value: "4", icon: BookOpen, change: "" },
+    { key: "creator.revenue", value: `$${totalRevenue.toFixed(0)}`, icon: DollarSign },
+    { key: "creator.sales", value: totalSales.toString(), icon: TrendingUp },
+    { key: "creator.views", value: totalReviews.toString(), icon: Eye },
+    { key: "creator.books", value: publishedCount.toString(), icon: BookOpen },
   ];
 
   return (
@@ -21,7 +28,6 @@ const CreatorOverview = () => {
             <CardContent className="p-4">
               <div className="flex items-center justify-between mb-2">
                 <s.icon className="h-5 w-5 text-muted-foreground" />
-                {s.change && <span className="text-xs text-savanna font-medium">{s.change}</span>}
               </div>
               <p className="text-2xl font-bold tabular-nums">{s.value}</p>
               <p className="text-xs text-muted-foreground">{t(s.key)}</p>
@@ -29,15 +35,6 @@ const CreatorOverview = () => {
           </Card>
         ))}
       </div>
-      <Card>
-        <CardHeader><CardTitle>{t("creator.analytics")}</CardTitle></CardHeader>
-        <CardContent>
-          <div className="h-48 flex items-center justify-center text-muted-foreground rounded-lg bg-muted/50">
-            <BarChart3 className="h-10 w-10 mr-2 opacity-30" />
-            <span className="text-sm">Graphique des ventes (données simulées)</span>
-          </div>
-        </CardContent>
-      </Card>
     </div>
   );
 };

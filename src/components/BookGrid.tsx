@@ -2,19 +2,21 @@ import { Link } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import BookCard from "@/components/BookCard";
-import { Book } from "@/data/mockBooks";
+import type { Book } from "@/types/book";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface BookGridProps {
   title: string;
   books: Book[];
   categoryLink?: string;
+  loading?: boolean;
 }
 
-const BookGrid = ({ title, books, categoryLink }: BookGridProps) => {
+const BookGrid = ({ title, books, categoryLink, loading }: BookGridProps) => {
   const { t } = useLanguage();
 
-  if (books.length === 0) return null;
+  if (!loading && books.length === 0) return null;
 
   return (
     <section className="space-y-6">
@@ -29,11 +31,23 @@ const BookGrid = ({ title, books, categoryLink }: BookGridProps) => {
           </Button>
         )}
       </div>
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
-        {books.map((book) => (
-          <BookCard key={book.id} book={book} />
-        ))}
-      </div>
+      {loading ? (
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+          {[...Array(5)].map((_, i) => (
+            <div key={i} className="space-y-3">
+              <Skeleton className="aspect-[2/3] rounded-xl" />
+              <Skeleton className="h-4 w-3/4" />
+              <Skeleton className="h-3 w-1/2" />
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+          {books.map((book) => (
+            <BookCard key={book.id} book={book} />
+          ))}
+        </div>
+      )}
     </section>
   );
 };
