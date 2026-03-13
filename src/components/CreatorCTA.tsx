@@ -8,7 +8,7 @@ const CreatorCTA = () => {
   const { t } = useLanguage();
 
   return (
-    <section className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary via-primary to-kente p-8 md:p-14 text-primary-foreground">
+    <section className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary via-primary to-primary/80 p-8 md:p-14 text-primary-foreground">
       <div className="absolute top-0 right-0 w-64 h-64 bg-background/5 rounded-full -translate-y-1/2 translate-x-1/2" />
       <div className="absolute bottom-0 left-0 w-40 h-40 bg-background/5 rounded-full translate-y-1/2 -translate-x-1/2" />
       <motion.div
@@ -21,10 +21,7 @@ const CreatorCTA = () => {
         <h2 className="text-3xl font-bold md:text-4xl">{t("cta.creator.title")}</h2>
         <p className="text-base opacity-80 font-sans">{t("cta.creator.subtitle")}</p>
         <Button size="lg" variant="secondary" asChild className="rounded-full gap-2 mt-2">
-          <Link to="/signup">
-            {t("cta.creator.button")}
-            <ArrowRight className="h-4 w-4" />
-          </Link>
+          <Link to="/signup">{t("cta.creator.button")}<ArrowRight className="h-4 w-4" /></Link>
         </Button>
       </motion.div>
     </section>

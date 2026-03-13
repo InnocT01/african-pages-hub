@@ -5,21 +5,68 @@ import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useCart } from "@/contexts/CartContext";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { Smartphone, CreditCard, CheckCircle, ArrowLeft } from "lucide-react";
+import { Smartphone, CreditCard, CheckCircle, ArrowLeft, Loader2 } from "lucide-react";
+import { toast } from "sonner";
 
 const Checkout = () => {
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
   const { items, total, clearCart } = useCart();
+  const { user } = useAuth();
   const [paymentMethod, setPaymentMethod] = useState("mobilemoney");
   const [confirmed, setConfirmed] = useState(false);
+  const [processing, setProcessing] = useState(false);
 
-  const handleConfirm = () => {
-    setConfirmed(true);
-    clearCart();
+  const handleConfirm = async () => {
+    if (!user) {
+      toast.error(lang === "fr" ? "Connectez-vous pour commander" : "Sign in to order");
+      return;
+    }
+    setProcessing(true);
+    try {
+      // Create order
+      const { data: order, error: orderErr } = await supabase
+        .from("orders")
+        .insert({
+          user_id: user.id,
+          total,
+          payment_method: paymentMethod,
+          status: "completed",
+          currency: "USD",
+        } as any)
+        .select()
+        .single();
+      if (orderErr) throw orderErr;
+
+      // Create order items
+      const orderItems = items.map((item) => ({
+        order_id: order.id,
+        book_id: item.book.id,
+        quantity: item.quantity,
+        unit_price: item.book.price,
+      }));
+      const { error: itemsErr } = await supabase.from("order_items").insert(orderItems as any);
+      if (itemsErr) throw itemsErr;
+
+      // Update sales count
+      for (const item of items) {
+        await supabase.from("books").update({
+          sales_count: (item.book.sales_count || 0) + item.quantity,
+        } as any).eq("id", item.book.id);
+      }
+
+      setConfirmed(true);
+      clearCart();
+    } catch (e: any) {
+      toast.error(e.message || "Error");
+    } finally {
+      setProcessing(false);
+    }
   };
 
   if (confirmed) {
@@ -28,12 +75,10 @@ const Checkout = () => {
         <Header />
         <main className="flex-1 flex items-center justify-center px-4 py-16">
           <div className="text-center space-y-4 max-w-md">
-            <CheckCircle className="h-20 w-20 text-savanna mx-auto" />
+            <CheckCircle className="h-20 w-20 text-accent mx-auto" />
             <h1 className="text-3xl font-bold">{t("checkout.success")}</h1>
             <p className="text-muted-foreground">{t("checkout.success.msg")}</p>
-            <Button asChild className="rounded-full">
-              <Link to="/">{t("cart.continue")}</Link>
-            </Button>
+            <Button asChild className="rounded-full"><Link to="/">{t("cart.continue")}</Link></Button>
           </div>
         </main>
         <Footer />
@@ -52,16 +97,13 @@ const Checkout = () => {
         <h1 className="text-3xl font-bold mb-8">{t("checkout.title")}</h1>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Payment method */}
           <Card>
-            <CardHeader>
-              <CardTitle className="text-xl">{t("checkout.payment")}</CardTitle>
-            </CardHeader>
+            <CardHeader><CardTitle className="text-xl">{t("checkout.payment")}</CardTitle></CardHeader>
             <CardContent className="space-y-4">
               <RadioGroup value={paymentMethod} onValueChange={setPaymentMethod} className="space-y-3">
                 <Label htmlFor="pm-mobile" className={`flex items-center gap-4 rounded-xl border-2 p-4 cursor-pointer transition-all ${paymentMethod === "mobilemoney" ? "border-primary bg-primary/5" : "border-border"}`}>
                   <RadioGroupItem value="mobilemoney" id="pm-mobile" />
-                  <Smartphone className="h-6 w-6 text-savanna" />
+                  <Smartphone className="h-6 w-6 text-accent" />
                   <div>
                     <p className="font-medium">{t("checkout.mobilemoney")}</p>
                     <p className="text-xs text-muted-foreground">M-Pesa, Orange Money, Airtel Money</p>
@@ -80,7 +122,7 @@ const Checkout = () => {
               {paymentMethod === "mobilemoney" && (
                 <div className="space-y-3 pt-2">
                   <div className="space-y-2">
-                    <Label>Numéro de téléphone</Label>
+                    <Label>{lang === "fr" ? "Numéro de téléphone" : "Phone Number"}</Label>
                     <Input placeholder="+243 XXX XXX XXX" className="rounded-lg" />
                   </div>
                 </div>
@@ -89,13 +131,13 @@ const Checkout = () => {
               {paymentMethod === "card" && (
                 <div className="space-y-3 pt-2">
                   <div className="space-y-2">
-                    <Label>Numéro de carte</Label>
+                    <Label>{lang === "fr" ? "Numéro de carte" : "Card Number"}</Label>
                     <Input placeholder="4242 4242 4242 4242" className="rounded-lg" />
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-2">
                       <Label>Expiration</Label>
-                      <Input placeholder="MM/AA" className="rounded-lg" />
+                      <Input placeholder="MM/YY" className="rounded-lg" />
                     </div>
                     <div className="space-y-2">
                       <Label>CVC</Label>
@@ -107,11 +149,8 @@ const Checkout = () => {
             </CardContent>
           </Card>
 
-          {/* Summary */}
           <Card>
-            <CardHeader>
-              <CardTitle className="text-xl">Résumé</CardTitle>
-            </CardHeader>
+            <CardHeader><CardTitle className="text-xl">{lang === "fr" ? "Résumé" : "Summary"}</CardTitle></CardHeader>
             <CardContent className="space-y-4">
               {items.map((item) => (
                 <div key={item.book.id} className="flex justify-between text-sm">
@@ -124,7 +163,8 @@ const Checkout = () => {
                 <span>Total</span>
                 <span className="text-primary tabular-nums">${total.toFixed(2)}</span>
               </div>
-              <Button size="lg" className="w-full rounded-full" onClick={handleConfirm}>
+              <Button size="lg" className="w-full rounded-full" onClick={handleConfirm} disabled={processing}>
+                {processing ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
                 {t("checkout.confirm")}
               </Button>
             </CardContent>
