@@ -17,6 +17,7 @@ export type Database = {
       books: {
         Row: {
           author_id: string
+          author_name: string | null
           category: string
           content_type: string
           cover_url: string | null
@@ -29,6 +30,7 @@ export type Database = {
           genre: string
           id: string
           isbn: string | null
+          keywords: string[] | null
           language: string | null
           origin: string
           page_count: number | null
@@ -37,11 +39,13 @@ export type Database = {
           review_count: number | null
           sales_count: number | null
           status: string
+          subtitle: string | null
           title: string
           updated_at: string
         }
         Insert: {
           author_id: string
+          author_name?: string | null
           category?: string
           content_type?: string
           cover_url?: string | null
@@ -54,6 +58,7 @@ export type Database = {
           genre?: string
           id?: string
           isbn?: string | null
+          keywords?: string[] | null
           language?: string | null
           origin?: string
           page_count?: number | null
@@ -62,11 +67,13 @@ export type Database = {
           review_count?: number | null
           sales_count?: number | null
           status?: string
+          subtitle?: string | null
           title: string
           updated_at?: string
         }
         Update: {
           author_id?: string
+          author_name?: string | null
           category?: string
           content_type?: string
           cover_url?: string | null
@@ -79,6 +86,7 @@ export type Database = {
           genre?: string
           id?: string
           isbn?: string | null
+          keywords?: string[] | null
           language?: string | null
           origin?: string
           page_count?: number | null
@@ -87,6 +95,7 @@ export type Database = {
           review_count?: number | null
           sales_count?: number | null
           status?: string
+          subtitle?: string | null
           title?: string
           updated_at?: string
         }
@@ -228,6 +237,41 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      reviews: {
+        Row: {
+          book_id: string
+          comment: string | null
+          created_at: string
+          id: string
+          rating: number
+          user_id: string
+        }
+        Insert: {
+          book_id: string
+          comment?: string | null
+          created_at?: string
+          id?: string
+          rating?: number
+          user_id: string
+        }
+        Update: {
+          book_id?: string
+          comment?: string | null
+          created_at?: string
+          id?: string
+          rating?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reviews_book_id_fkey"
+            columns: ["book_id"]
+            isOneToOne: false
+            referencedRelation: "books"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_roles: {
         Row: {
