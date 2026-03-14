@@ -9,11 +9,12 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth, UserRole } from "@/contexts/AuthContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { PenTool, BookOpen } from "lucide-react";
+import { AlertCircle, BookOpen, Loader2, PenTool } from "lucide-react";
 import { toast } from "sonner";
+import { getAuthErrorMessage } from "@/lib/auth-errors";
 
 const Signup = () => {
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
   const { signup } = useAuth();
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
@@ -21,15 +22,19 @@ const Signup = () => {
   const [name, setName] = useState("");
   const [role, setRole] = useState<UserRole>("reader");
   const [loading, setLoading] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setFormError(null);
     setLoading(true);
     try {
-      await signup(email, password, name, role);
-      navigate(role === "creator" ? "/creator" : "/");
-    } catch (err: any) {
-      toast.error(t("auth.error"), { description: err.message });
+      const resolvedRole = await signup(email, password, name, role);
+      navigate(resolvedRole === "creator" ? "/creator" : "/reader", { replace: true });
+    } catch (err: unknown) {
+      const message = getAuthErrorMessage(err, lang);
+      setFormError(message);
+      toast.error(t("auth.error"), { description: message });
     } finally {
       setLoading(false);
     }
@@ -44,18 +49,18 @@ const Signup = () => {
             <CardTitle className="text-2xl">{t("auth.signup.title")}</CardTitle>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-4" noValidate>
               <div className="space-y-2">
                 <Label htmlFor="name">{t("auth.name")}</Label>
-                <Input id="name" value={name} onChange={(e) => setName(e.target.value)} required className="rounded-lg" />
+                <Input id="name" value={name} onChange={(e) => setName(e.target.value)} required disabled={loading} className="rounded-lg" />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="email">{t("auth.email")}</Label>
-                <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required className="rounded-lg" />
+                <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required disabled={loading} className="rounded-lg" />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="password">{t("auth.password")}</Label>
-                <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6} className="rounded-lg" />
+                <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6} disabled={loading} className="rounded-lg" />
               </div>
 
               <div className="space-y-3">
@@ -74,7 +79,15 @@ const Signup = () => {
                 </RadioGroup>
               </div>
 
-              <Button type="submit" className="w-full rounded-full" disabled={loading}>
+              {formError && (
+                <p className="flex items-center gap-2 text-sm text-destructive" role="alert">
+                  <AlertCircle className="h-4 w-4" />
+                  {formError}
+                </p>
+              )}
+
+              <Button type="submit" className="w-full rounded-full gap-2" disabled={loading}>
+                {loading && <Loader2 className="h-4 w-4 animate-spin" />}
                 {loading ? t("common.loading") : t("auth.signup.button")}
               </Button>
             </form>
