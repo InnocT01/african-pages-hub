@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useCallback, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import type { User as SupabaseUser, Session } from "@supabase/supabase-js";
+import type { User as SupabaseUser } from "@supabase/supabase-js";
 
 export type UserRole = "creator" | "reader";
 
@@ -14,39 +14,92 @@ export interface User {
 
 interface AuthContextType {
   user: User | null;
-  login: (email: string, password: string) => Promise<void>;
-  signup: (email: string, password: string, name: string, role: UserRole) => Promise<void>;
-  logout: () => void;
+  login: (email: string, password: string) => Promise<UserRole>;
+  signup: (email: string, password: string, name: string, role: UserRole) => Promise<UserRole>;
+  logout: () => Promise<void>;
   isAuthenticated: boolean;
   loading: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
+const AUTH_TIMEOUT_MS = 15000;
 
-async function fetchUserRole(userId: string): Promise<UserRole> {
-  const { data } = await supabase
+const withTimeout = async <T,>(promise: Promise<T>, ms = AUTH_TIMEOUT_MS): Promise<T> => {
+  return Promise.race([
+    promise,
+    new Promise<T>((_, reject) =>
+      setTimeout(() => reject(new Error("Auth request timeout")), ms),
+    ),
+  ]);
+};
+
+const metadataRole = (su: SupabaseUser): UserRole => {
+  const role = su.user_metadata?.role;
+  return role === "creator" ? "creator" : "reader";
+};
+
+const fallbackUser = (su: SupabaseUser, forcedRole?: UserRole): User => ({
+  id: su.id,
+  email: su.email || "",
+  name: su.user_metadata?.name || su.email?.split("@")[0] || "",
+  role: forcedRole || metadataRole(su),
+});
+
+async function fetchUserRole(userId: string, fallback: UserRole): Promise<UserRole> {
+  const { data, error } = await supabase
     .from("user_roles")
     .select("role")
     .eq("user_id", userId)
-    .single();
-  return (data?.role as UserRole) || "reader";
+    .limit(1)
+    .maybeSingle();
+
+  if (error) return fallback;
+  return (data?.role as UserRole) || fallback;
 }
 
-async function buildUser(su: SupabaseUser): Promise<User> {
-  const role = await fetchUserRole(su.id);
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("display_name, avatar_url")
-    .eq("user_id", su.id)
-    .single();
+async function ensureAccountRows(su: SupabaseUser, name: string, role: UserRole) {
+  const displayName = name?.trim() || su.user_metadata?.name || su.email;
+
+  await Promise.allSettled([
+    supabase
+      .from("profiles")
+      .upsert({ user_id: su.id, display_name: displayName } as any, { onConflict: "user_id" }),
+    supabase
+      .from("user_roles")
+      .insert({ user_id: su.id, role } as any),
+  ]);
+}
+
+async function buildUser(su: SupabaseUser, forcedRole?: UserRole): Promise<User> {
+  const fallbackRole = forcedRole || metadataRole(su);
+  const [role, profileResult] = await Promise.all([
+    fetchUserRole(su.id, fallbackRole),
+    supabase
+      .from("profiles")
+      .select("display_name, avatar_url")
+      .eq("user_id", su.id)
+      .maybeSingle(),
+  ]);
 
   return {
     id: su.id,
     email: su.email || "",
-    name: profile?.display_name || su.user_metadata?.name || su.email?.split("@")[0] || "",
+    name:
+      profileResult.data?.display_name ||
+      su.user_metadata?.name ||
+      su.email?.split("@")[0] ||
+      "",
     role,
-    avatar: profile?.avatar_url || undefined,
+    avatar: profileResult.data?.avatar_url || undefined,
   };
+}
+
+async function safeBuildUser(su: SupabaseUser, forcedRole?: UserRole): Promise<User> {
+  try {
+    return await withTimeout(buildUser(su, forcedRole));
+  } catch {
+    return fallbackUser(su, forcedRole);
+  }
 }
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -54,39 +107,60 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      if (session?.user) {
-        const u = await buildUser(session.user);
-        setUser(u);
-      } else {
-        setUser(null);
+    const syncFromSession = async (sessionUser?: SupabaseUser | null) => {
+      try {
+        if (!sessionUser) {
+          setUser(null);
+          return;
+        }
+
+        const resolvedUser = await safeBuildUser(sessionUser);
+        setUser(resolvedUser);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
+    };
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      void syncFromSession(session?.user ?? null);
     });
 
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
-      if (session?.user) {
-        const u = await buildUser(session.user);
-        setUser(u);
-      }
-      setLoading(false);
+    void supabase.auth.getSession().then(({ data: { session } }) => {
+      void syncFromSession(session?.user ?? null);
     });
 
     return () => subscription.unsubscribe();
   }, []);
 
-  const login = useCallback(async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+  const login = useCallback(async (email: string, password: string): Promise<UserRole> => {
+    const { data, error } = await withTimeout(supabase.auth.signInWithPassword({ email, password }));
     if (error) throw error;
+
+    if (data.user) {
+      const resolvedUser = await safeBuildUser(data.user);
+      setUser(resolvedUser);
+      return resolvedUser.role;
+    }
+
+    return "reader";
   }, []);
 
-  const signup = useCallback(async (email: string, password: string, name: string, role: UserRole) => {
-    const { error } = await supabase.auth.signUp({
+  const signup = useCallback(async (email: string, password: string, name: string, role: UserRole): Promise<UserRole> => {
+    const { data, error } = await withTimeout(supabase.auth.signUp({
       email,
       password,
       options: { data: { name, role } },
-    });
+    }));
     if (error) throw error;
+
+    if (data.user) {
+      await ensureAccountRows(data.user, name, role);
+      const resolvedUser = await safeBuildUser(data.user, role);
+      setUser(resolvedUser);
+      return resolvedUser.role;
+    }
+
+    return role;
   }, []);
 
   const logout = useCallback(async () => {
