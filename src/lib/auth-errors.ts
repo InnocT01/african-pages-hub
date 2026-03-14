@@ -1,4 +1,4 @@
-import type { GoTrueError } from "@supabase/supabase-js";
+type AuthErrorLike = { message?: string; status?: string | number };
 
 type Lang = "fr" | "en";
 
