@@ -26,8 +26,9 @@ const messages = {
 } as const;
 
 export const getAuthErrorMessage = (error: unknown, lang: Lang): string => {
-  const raw = ((error as GoTrueError)?.message || "").toLowerCase();
-  const code = ((error as GoTrueError)?.status || "").toString().toLowerCase();
+  const authError = (error as AuthErrorLike) || {};
+  const raw = (authError.message || "").toLowerCase();
+  const code = (authError.status || "").toString().toLowerCase();
   const dict = messages[lang];
 
   if (raw.includes("invalid login credentials")) return dict.invalidCredentials;
