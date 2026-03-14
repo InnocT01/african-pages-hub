@@ -22,7 +22,7 @@ const translations: Record<string, Record<Language, string>> = {
   "nav.login": { fr: "Connexion", en: "Sign In" },
   "nav.signup": { fr: "Inscription", en: "Sign Up" },
   "nav.cart": { fr: "Panier", en: "Cart" },
-  "nav.dashboard": { fr: "Tableau de bord", en: "Dashboard" },
+  "nav.dashboard": { fr: "Mon compte", en: "My Account" },
   "nav.logout": { fr: "Déconnexion", en: "Sign Out" },
   "nav.catalog": { fr: "Catalogue", en: "Catalog" },
   "nav.about": { fr: "À propos", en: "About" },

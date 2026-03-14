@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -8,24 +8,33 @@ import { Label } from "@/components/ui/label";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { AlertCircle, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { getAuthErrorMessage } from "@/lib/auth-errors";
 
 const Login = () => {
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
   const { login } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setFormError(null);
     setLoading(true);
     try {
-      await login(email, password);
-      navigate("/");
-    } catch (err: any) {
-      toast.error(t("auth.error"), { description: err.message });
+      const role = await login(email, password);
+      const from = (location.state as { from?: string } | null)?.from;
+      const fallback = role === "creator" ? "/creator" : "/reader";
+      navigate(from || fallback, { replace: true });
+    } catch (err: unknown) {
+      const message = getAuthErrorMessage(err, lang);
+      setFormError(message);
+      toast.error(t("auth.error"), { description: message });
     } finally {
       setLoading(false);
     }
@@ -40,16 +49,41 @@ const Login = () => {
             <CardTitle className="text-2xl">{t("auth.login.title")}</CardTitle>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-4" noValidate>
               <div className="space-y-2">
                 <Label htmlFor="email">{t("auth.email")}</Label>
-                <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required className="rounded-lg" />
+                <Input
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  disabled={loading}
+                  className="rounded-lg"
+                />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="password">{t("auth.password")}</Label>
-                <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required className="rounded-lg" />
+                <Input
+                  id="password"
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  disabled={loading}
+                  className="rounded-lg"
+                />
               </div>
-              <Button type="submit" className="w-full rounded-full" disabled={loading}>
+
+              {formError && (
+                <p className="flex items-center gap-2 text-sm text-destructive" role="alert">
+                  <AlertCircle className="h-4 w-4" />
+                  {formError}
+                </p>
+              )}
+
+              <Button type="submit" className="w-full rounded-full gap-2" disabled={loading}>
+                {loading && <Loader2 className="h-4 w-4 animate-spin" />}
                 {loading ? t("common.loading") : t("auth.login.button")}
               </Button>
             </form>
