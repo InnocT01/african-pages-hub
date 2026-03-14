@@ -6,6 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { CartProvider } from "@/contexts/CartContext";
 import { AuthProvider } from "@/contexts/AuthContext";
+import ProtectedRoute from "@/components/ProtectedRoute";
 import Index from "./pages/Index";
 import Catalog from "./pages/Catalog";
 import BookDetail from "./pages/BookDetail";
@@ -39,8 +40,15 @@ const App = () => (
                 <Route path="/signup" element={<Signup />} />
                 <Route path="/cart" element={<Cart />} />
                 <Route path="/checkout" element={<Checkout />} />
-                <Route path="/creator" element={<CreatorDashboard />} />
-                <Route path="/reader" element={<ReaderDashboard />} />
+
+                <Route element={<ProtectedRoute requiredRole="creator" />}>
+                  <Route path="/creator" element={<CreatorDashboard />} />
+                </Route>
+
+                <Route element={<ProtectedRoute requiredRole="reader" />}>
+                  <Route path="/reader" element={<ReaderDashboard />} />
+                </Route>
+
                 <Route path="/about" element={<About />} />
                 <Route path="/terms" element={<Terms />} />
                 <Route path="/privacy" element={<Privacy />} />
