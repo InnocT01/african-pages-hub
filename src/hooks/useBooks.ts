@@ -11,15 +11,18 @@ export function useBooks(options?: {
   featured?: boolean;
   limit?: number;
   authorId?: string;
+  sortBy?: "sales" | "rating" | "created_at";
 }) {
   return useQuery({
     queryKey: ["books", options],
     queryFn: async () => {
+      const sortField = options?.sortBy === "sales" ? "sales_count" : options?.sortBy === "rating" ? "rating" : "created_at";
+      
       let query = supabase
         .from("books")
         .select("*")
         .eq("status", "published")
-        .order("created_at", { ascending: false });
+        .order(sortField, { ascending: false });
 
       if (options?.category) query = query.eq("category", options.category);
       if (options?.genre) query = query.eq("genre", options.genre);
@@ -44,11 +47,7 @@ export function useBook(id: string | undefined) {
     queryKey: ["book", id],
     queryFn: async () => {
       if (!id) return null;
-      const { data, error } = await supabase
-        .from("books")
-        .select("*")
-        .eq("id", id)
-        .single();
+      const { data, error } = await supabase.from("books").select("*").eq("id", id).single();
       if (error) throw error;
       return data as unknown as Book;
     },
@@ -62,11 +61,7 @@ export function useMyBooks() {
     queryFn: async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return [];
-      const { data, error } = await supabase
-        .from("books")
-        .select("*")
-        .eq("author_id", user.id)
-        .order("created_at", { ascending: false });
+      const { data, error } = await supabase.from("books").select("*").eq("author_id", user.id).order("created_at", { ascending: false });
       if (error) throw error;
       return (data || []) as unknown as Book[];
     },
@@ -77,11 +72,7 @@ export function useCreateBook() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (bookData: Record<string, unknown>) => {
-      const { data, error } = await supabase
-        .from("books")
-        .insert(bookData as any)
-        .select()
-        .single();
+      const { data, error } = await supabase.from("books").insert(bookData as any).select().single();
       if (error) throw error;
       return data;
     },
@@ -96,12 +87,7 @@ export function useUpdateBook() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async ({ id, ...updates }: { id: string } & Record<string, unknown>) => {
-      const { data, error } = await supabase
-        .from("books")
-        .update(updates as any)
-        .eq("id", id)
-        .select()
-        .single();
+      const { data, error } = await supabase.from("books").update(updates as any).eq("id", id).select().single();
       if (error) throw error;
       return data;
     },

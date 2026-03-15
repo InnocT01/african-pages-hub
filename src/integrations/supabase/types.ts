@@ -27,18 +27,23 @@ export type Database = {
           duration_minutes: number | null
           featured: boolean | null
           file_url: string | null
+          format: string
           genre: string
           id: string
+          is_new: boolean
           isbn: string | null
           keywords: string[] | null
           language: string | null
+          on_sale: boolean
           origin: string
           page_count: number | null
           price: number
           rating: number | null
           review_count: number | null
+          sale_price: number | null
           sales_count: number | null
           status: string
+          stock_count: number | null
           subtitle: string | null
           title: string
           updated_at: string
@@ -55,18 +60,23 @@ export type Database = {
           duration_minutes?: number | null
           featured?: boolean | null
           file_url?: string | null
+          format?: string
           genre?: string
           id?: string
+          is_new?: boolean
           isbn?: string | null
           keywords?: string[] | null
           language?: string | null
+          on_sale?: boolean
           origin?: string
           page_count?: number | null
           price?: number
           rating?: number | null
           review_count?: number | null
+          sale_price?: number | null
           sales_count?: number | null
           status?: string
+          stock_count?: number | null
           subtitle?: string | null
           title: string
           updated_at?: string
@@ -83,18 +93,23 @@ export type Database = {
           duration_minutes?: number | null
           featured?: boolean | null
           file_url?: string | null
+          format?: string
           genre?: string
           id?: string
+          is_new?: boolean
           isbn?: string | null
           keywords?: string[] | null
           language?: string | null
+          on_sale?: boolean
           origin?: string
           page_count?: number | null
           price?: number
           rating?: number | null
           review_count?: number | null
+          sale_price?: number | null
           sales_count?: number | null
           status?: string
+          stock_count?: number | null
           subtitle?: string | null
           title?: string
           updated_at?: string
@@ -210,29 +225,44 @@ export type Database = {
       }
       profiles: {
         Row: {
+          address: string | null
           avatar_url: string | null
+          bank_account_name: string | null
+          bank_name: string | null
           bio: string | null
           created_at: string
           display_name: string | null
+          iban: string | null
           id: string
+          phone: string | null
           updated_at: string
           user_id: string
         }
         Insert: {
+          address?: string | null
           avatar_url?: string | null
+          bank_account_name?: string | null
+          bank_name?: string | null
           bio?: string | null
           created_at?: string
           display_name?: string | null
+          iban?: string | null
           id?: string
+          phone?: string | null
           updated_at?: string
           user_id: string
         }
         Update: {
+          address?: string | null
           avatar_url?: string | null
+          bank_account_name?: string | null
+          bank_name?: string | null
           bio?: string | null
           created_at?: string
           display_name?: string | null
+          iban?: string | null
           id?: string
+          phone?: string | null
           updated_at?: string
           user_id?: string
         }

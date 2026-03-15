@@ -23,6 +23,11 @@ export interface Book {
   status: string;
   isbn: string | null;
   keywords?: string[] | null;
+  format: string;
+  stock_count: number | null;
+  is_new: boolean;
+  on_sale: boolean;
+  sale_price: number | null;
   created_at: string;
   updated_at: string;
 }
