@@ -117,6 +117,7 @@ const translations: Record<string, Record<Language, string>> = {
   "checkout.payment": { fr: "Méthode de paiement", en: "Payment Method" },
   "checkout.mobilemoney": { fr: "Mobile Money", en: "Mobile Money" },
   "checkout.card": { fr: "Carte bancaire", en: "Credit Card" },
+  "checkout.bank": { fr: "Virement bancaire", en: "Bank Transfer" },
   "checkout.confirm": { fr: "Confirmer la commande", en: "Confirm Order" },
   "checkout.success": { fr: "Commande confirmée !", en: "Order Confirmed!" },
   "checkout.success.msg": { fr: "Merci pour votre achat. Vos livres sont disponibles dans votre bibliothèque.", en: "Thank you for your purchase. Your books are available in your library." },
