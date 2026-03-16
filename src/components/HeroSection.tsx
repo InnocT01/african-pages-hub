@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowRight, ChevronLeft, ChevronRight, Star, BookOpen, ShoppingCart } from "lucide-react";
+import { ArrowRight, ChevronLeft, ChevronRight, Star, BookOpen, ShoppingCart, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useCart } from "@/contexts/CartContext";
 import { useBooks } from "@/hooks/useBooks";
@@ -17,120 +18,100 @@ const HeroSection = () => {
 
   useEffect(() => {
     if (featured.length === 0) return;
-    const timer = setInterval(() => setCurrent((c) => (c + 1) % featured.length), 5000);
+    const timer = setInterval(() => setCurrent((c) => (c + 1) % featured.length), 6000);
     return () => clearInterval(timer);
   }, [featured.length]);
 
   if (isLoading) {
     return (
-      <section className="bg-[hsl(20,45%,22%)] text-[hsl(30,25%,97%)]">
-        <div className="container mx-auto px-4 py-16 md:py-20">
-          <div className="flex flex-col md:flex-row items-center gap-8">
-            <Skeleton className="w-48 md:w-56 aspect-[2/3] rounded-2xl bg-white/10" />
-            <div className="flex-1 space-y-4">
-              <Skeleton className="h-6 w-32 bg-white/10" />
-              <Skeleton className="h-12 w-3/4 bg-white/10" />
-              <Skeleton className="h-4 w-1/2 bg-white/10" />
-            </div>
-          </div>
+      <section className="relative bg-gradient-to-br from-primary via-primary to-accent overflow-hidden">
+        <div className="container mx-auto px-4 py-20 md:py-28 text-center">
+          <Skeleton className="h-10 w-64 mx-auto bg-primary-foreground/10 mb-6" />
+          <Skeleton className="h-14 w-full max-w-2xl mx-auto bg-primary-foreground/10 rounded-full" />
         </div>
       </section>
     );
   }
 
-  if (featured.length === 0) {
-    return (
-      <section className="relative overflow-hidden bg-gradient-to-br from-[hsl(20,45%,22%)] to-[hsl(25,35%,30%)] text-[hsl(30,25%,97%)]">
-        <div className="container mx-auto px-4 py-16 md:py-20 text-center">
-          <BookOpen className="h-16 w-16 mx-auto mb-4 text-primary opacity-60" />
-          <h2 className="text-3xl font-bold md:text-5xl mb-4">{t("hero.nobooks")}</h2>
-          <Button size="lg" asChild className="rounded-full gap-2 mt-4">
-            <Link to="/signup">{t("cta.creator.button")}<ArrowRight className="h-4 w-4" /></Link>
-          </Button>
-        </div>
-      </section>
-    );
-  }
-
-  const book = featured[current % featured.length];
-  if (!book) return null;
-
+  const book = featured.length > 0 ? featured[current % featured.length] : null;
   const prev = () => setCurrent((c) => (c - 1 + featured.length) % featured.length);
   const next = () => setCurrent((c) => (c + 1) % featured.length);
-  const description = lang === "fr" ? book.description_fr : book.description_en;
-  const effectivePrice = book.on_sale && book.sale_price ? book.sale_price : book.price;
 
   return (
-    <section className="relative overflow-hidden bg-gradient-to-br from-[hsl(20,45%,22%)] via-[hsl(25,35%,25%)] to-[hsl(20,30%,18%)] text-[hsl(30,25%,97%)]">
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={book.id}
-          initial={{ opacity: 0, scale: 1.1 }}
-          animate={{ opacity: 0.15, scale: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.8 }}
-          className="absolute inset-0 bg-cover bg-center"
-          style={{ backgroundImage: book.cover_url ? `url(${book.cover_url})` : undefined }}
-        />
-      </AnimatePresence>
-      <div className="absolute inset-0 bg-gradient-to-r from-[hsl(20,45%,22%)] via-[hsl(20,45%,22%)]/95 to-transparent" />
+    <section className="relative overflow-hidden">
+      {/* Gradient background */}
+      <div className="absolute inset-0 bg-gradient-to-br from-primary via-primary/90 to-accent" />
+      <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%23ffffff\' fill-opacity=\'0.4\'%3E%3Cpath d=\'M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")' }} />
 
-      <div className="container relative mx-auto px-4 py-14 md:py-20">
-        <div className="flex flex-col md:flex-row items-center gap-8 md:gap-14">
-          <AnimatePresence mode="wait">
-            <motion.div key={book.id} initial={{ opacity: 0, x: -30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 30 }} transition={{ duration: 0.5 }} className="shrink-0">
-              <Link to={`/book/${book.id}`}>
-                <div className="relative w-44 md:w-52 lg:w-60 aspect-[2/3] rounded-2xl overflow-hidden shadow-2xl shadow-black/30 hover:shadow-primary/30 transition-shadow">
-                  {book.cover_url ? (
-                    <img src={book.cover_url} alt={book.title} className="h-full w-full object-cover" />
-                  ) : (
-                    <div className="h-full w-full bg-muted flex items-center justify-center"><BookOpen className="h-16 w-16 text-muted-foreground/30" /></div>
-                  )}
-                </div>
-              </Link>
-            </motion.div>
-          </AnimatePresence>
-
-          <AnimatePresence mode="wait">
-            <motion.div key={book.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.5, delay: 0.1 }} className="flex-1 space-y-4 text-center md:text-left">
-              <div className="inline-flex items-center gap-2 rounded-full bg-primary/20 px-3 py-1 text-xs font-medium text-primary">
-                <Star className="h-3 w-3 fill-primary" />{t("hero.featured")}
-              </div>
-              <h2 className="text-3xl font-bold md:text-5xl lg:text-6xl leading-tight">{book.title}</h2>
-              <p className="text-lg opacity-70 font-sans">{t("book.by")} <span className="text-primary font-medium">{book.author_name || "Auteur"}</span> · {book.origin}</p>
-              {description && <p className="text-sm opacity-50 max-w-lg font-sans line-clamp-3">{description}</p>}
-              <div className="flex items-center gap-2 justify-center md:justify-start">
-                <div className="flex">{[...Array(5)].map((_, i) => <Star key={i} className={`h-4 w-4 ${i < Math.floor(book.rating || 0) ? "fill-primary text-primary" : "text-white/20"}`} />)}</div>
-                <span className="text-sm opacity-50">({book.review_count || 0})</span>
-              </div>
-              <div className="flex items-center gap-3 justify-center md:justify-start">
-                {book.on_sale && book.sale_price ? (
-                  <>
-                    <span className="text-3xl font-bold text-primary tabular-nums">${book.sale_price.toFixed(2)}</span>
-                    <span className="text-xl line-through opacity-40 tabular-nums">${book.price.toFixed(2)}</span>
-                    <Badge className="bg-destructive text-destructive-foreground">Promo</Badge>
-                  </>
-                ) : (
-                  <span className="text-3xl font-bold text-primary tabular-nums">${book.price.toFixed(2)}</span>
-                )}
-              </div>
-              <div className="flex flex-wrap gap-3 justify-center md:justify-start pt-2">
-                <Button size="lg" className="rounded-full text-base gap-2" onClick={() => addToCart(book)}>
-                  <ShoppingCart className="h-4 w-4" />{t("book.addtocart")}
-                </Button>
-                <Button size="lg" variant="outline" asChild className="rounded-full text-base gap-2 border-white/20 text-white hover:bg-white/10">
-                  <Link to={`/book/${book.id}`}>{t("hero.details")}<ArrowRight className="h-4 w-4" /></Link>
-                </Button>
-              </div>
-            </motion.div>
-          </AnimatePresence>
+      <div className="container relative mx-auto px-4 py-16 md:py-24">
+        {/* Title + Search */}
+        <div className="text-center mb-12 md:mb-16">
+          <motion.h1 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-3xl md:text-5xl lg:text-6xl font-extrabold text-primary-foreground leading-tight mb-4">
+            {lang === "fr" ? "Découvrez la littérature africaine" : "Discover African Literature"}
+          </motion.h1>
+          <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="text-lg md:text-xl text-primary-foreground/70 mb-8 max-w-2xl mx-auto">
+            {lang === "fr" ? "E-books, livres brochés, audio — des milliers d'œuvres à portée de main" : "E-books, paperbacks, audio — thousands of works at your fingertips"}
+          </motion.p>
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="max-w-2xl mx-auto">
+            <form className="relative" onSubmit={(e) => { e.preventDefault(); const q = (e.target as any).search.value; if (q.trim()) window.location.href = `/catalog?search=${encodeURIComponent(q)}`; }}>
+              <Search className="absolute left-5 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
+              <input name="search" placeholder={lang === "fr" ? "Rechercher un livre, un auteur, un genre..." : "Search a book, author, genre..."} className="w-full h-14 pl-14 pr-32 rounded-full bg-background text-foreground shadow-2xl shadow-black/20 border-0 outline-none focus:ring-4 focus:ring-primary-foreground/20 text-base" />
+              <Button type="submit" size="lg" className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full h-10 px-6 font-semibold">
+                {lang === "fr" ? "Chercher" : "Search"}
+              </Button>
+            </form>
+          </motion.div>
         </div>
 
-        {featured.length > 1 && (
-          <div className="flex items-center justify-center gap-4 mt-8">
-            <Button variant="ghost" size="icon" onClick={prev} className="rounded-full text-white/50 hover:text-white hover:bg-white/10"><ChevronLeft className="h-5 w-5" /></Button>
-            <div className="flex gap-2">{featured.map((_, i) => <button key={i} onClick={() => setCurrent(i)} className={`h-2 rounded-full transition-all ${i === current % featured.length ? "w-8 bg-primary" : "w-2 bg-white/20 hover:bg-white/40"}`} />)}</div>
-            <Button variant="ghost" size="icon" onClick={next} className="rounded-full text-white/50 hover:text-white hover:bg-white/10"><ChevronRight className="h-5 w-5" /></Button>
+        {/* Featured book carousel */}
+        {featured.length > 0 && book && (
+          <div className="relative">
+            <div className="flex gap-4 overflow-x-auto scrollbar-hide pb-4 snap-x snap-mandatory">
+              {featured.map((fb, i) => {
+                const desc = lang === "fr" ? fb.description_fr : fb.description_en;
+                const ep = fb.on_sale && fb.sale_price ? fb.sale_price : fb.price;
+                return (
+                  <Link key={fb.id} to={`/book/${fb.id}`} className="snap-start shrink-0 w-[280px] md:w-[320px] group">
+                    <div className="bg-background rounded-2xl overflow-hidden shadow-lg shadow-black/10 hover:shadow-xl transition-shadow">
+                      <div className="relative aspect-[3/2] overflow-hidden">
+                        {fb.cover_url ? (
+                          <img src={fb.cover_url} alt={fb.title} className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                        ) : (
+                          <div className="h-full w-full bg-secondary flex items-center justify-center"><BookOpen className="h-10 w-10 text-muted-foreground/30" /></div>
+                        )}
+                        {/* Rating badge */}
+                        <div className="absolute top-3 left-3 flex items-center gap-1.5 bg-foreground/80 backdrop-blur-sm text-primary-foreground px-2 py-1 rounded-lg">
+                          <span className="text-sm font-bold">{fb.rating?.toFixed(1) || "—"}</span>
+                          <Star className="h-3 w-3 fill-current text-accent" />
+                          <span className="text-[10px] opacity-70">{fb.review_count || 0} {lang === "fr" ? "avis" : "reviews"}</span>
+                        </div>
+                        {/* Price */}
+                        <div className="absolute bottom-3 right-3 bg-background/95 backdrop-blur-sm rounded-lg px-3 py-1.5">
+                          <span className="text-lg font-extrabold text-primary tabular-nums">${ep.toFixed(2)}</span>
+                        </div>
+                        {fb.on_sale && (
+                          <Badge className="absolute top-3 right-3 bg-destructive text-destructive-foreground text-[10px]">
+                            -{Math.round((1 - (fb.sale_price || fb.price) / fb.price) * 100)}%
+                          </Badge>
+                        )}
+                      </div>
+                      <div className="p-4">
+                        <h3 className="font-bold text-sm line-clamp-1 group-hover:text-primary transition-colors">{fb.title}</h3>
+                        <p className="text-xs text-muted-foreground mt-0.5">{fb.author_name} · {fb.origin}</p>
+                        <div className="flex items-center justify-between mt-3">
+                          <span className="text-[10px] text-muted-foreground bg-secondary px-2 py-0.5 rounded-full">
+                            {fb.format === "both" ? "E-book + Broché" : fb.format === "paperback" ? "Broché" : "E-book"}
+                          </span>
+                          <Button size="sm" variant="ghost" className="h-7 text-xs text-primary font-semibold gap-1 hover:bg-primary/5" onClick={(e) => { e.preventDefault(); addToCart(fb); }}>
+                            <ShoppingCart className="h-3 w-3" />{lang === "fr" ? "Ajouter" : "Add"}
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
           </div>
         )}
       </div>
