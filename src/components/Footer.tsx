@@ -1,64 +1,74 @@
 import { Link } from "react-router-dom";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { Mail, MapPin, Facebook, Phone } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Mail, Phone, MapPin, Facebook, Twitter, Instagram } from "lucide-react";
 import logoImg from "@/assets/logo-kitabushop.png";
 
 const Footer = () => {
   const { t, lang } = useLanguage();
 
   return (
-    <footer className="border-t border-border bg-[hsl(20,45%,22%)] text-[hsl(30,25%,97%)]">
-      <div className="container mx-auto px-4 py-12">
-        <div className="grid grid-cols-1 gap-8 md:grid-cols-4">
+    <footer className="bg-foreground text-primary-foreground/80">
+      <div className="container mx-auto px-4 py-12 md:py-16">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
+          {/* Brand */}
           <div className="space-y-4">
-            <img src={logoImg} alt="KitabuShop" className="h-8 w-auto brightness-0 invert" />
-            <p className="text-sm opacity-70">{t("footer.description")}</p>
-            <div className="flex items-center gap-3">
-              <a href="https://web.facebook.com/profile.php?id=61579692684157" target="_blank" rel="noopener noreferrer" className="opacity-60 hover:opacity-100 transition-opacity">
-                <Facebook className="h-5 w-5" />
-              </a>
+            <div className="flex items-center gap-2">
+              <img src={logoImg} alt="KitabuShop" className="h-8 w-auto brightness-0 invert" />
+              <span className="text-lg font-extrabold text-primary-foreground">KitabuShop</span>
+            </div>
+            <p className="text-sm leading-relaxed text-primary-foreground/50">{t("footer.description")}</p>
+            <div className="flex gap-3">
+              <a href="https://web.facebook.com/profile.php?id=61579692684157" target="_blank" rel="noopener noreferrer" className="h-9 w-9 rounded-full bg-primary-foreground/10 flex items-center justify-center hover:bg-primary hover:text-primary-foreground transition-colors"><Facebook className="h-4 w-4" /></a>
+              <a href="#" className="h-9 w-9 rounded-full bg-primary-foreground/10 flex items-center justify-center hover:bg-primary hover:text-primary-foreground transition-colors"><Twitter className="h-4 w-4" /></a>
+              <a href="#" className="h-9 w-9 rounded-full bg-primary-foreground/10 flex items-center justify-center hover:bg-primary hover:text-primary-foreground transition-colors"><Instagram className="h-4 w-4" /></a>
             </div>
           </div>
 
-          <div className="space-y-3">
-            <h4 className="font-sans text-sm font-semibold uppercase tracking-wider opacity-50">Contact</h4>
-            <div className="flex flex-col gap-3 text-sm opacity-70">
-              <a href="mailto:kitabushop5@gmail.com" className="flex items-center gap-2 hover:opacity-100 transition-opacity">
-                <Mail className="h-4 w-4 shrink-0" />kitabushop5@gmail.com
-              </a>
-              <a href="tel:+243998881102" className="flex items-center gap-2 hover:opacity-100 transition-opacity">
-                <Phone className="h-4 w-4 shrink-0" />+243 998 881 102
-              </a>
-              <div className="flex items-start gap-2">
-                <MapPin className="h-4 w-4 shrink-0 mt-0.5" />
-                <span>Q. Office, avenue du Collège, 076, Goma-RDC</span>
+          {/* Links */}
+          <div className="space-y-4">
+            <h4 className="font-semibold text-primary-foreground text-sm uppercase tracking-wider">{lang === "fr" ? "Explorer" : "Explore"}</h4>
+            <div className="flex flex-col gap-2.5">
+              <Link to="/catalog" className="text-sm hover:text-primary transition-colors">{t("nav.catalog")}</Link>
+              <Link to="/catalog?category=literature" className="text-sm hover:text-primary transition-colors">{t("nav.literature")}</Link>
+              <Link to="/catalog?category=education" className="text-sm hover:text-primary transition-colors">{t("nav.education")}</Link>
+              <Link to="/catalog?category=youth" className="text-sm hover:text-primary transition-colors">{t("nav.youth")}</Link>
+              <Link to="/about" className="text-sm hover:text-primary transition-colors">{t("nav.about")}</Link>
+            </div>
+          </div>
+
+          {/* Legal */}
+          <div className="space-y-4">
+            <h4 className="font-semibold text-primary-foreground text-sm uppercase tracking-wider">{lang === "fr" ? "Légal" : "Legal"}</h4>
+            <div className="flex flex-col gap-2.5">
+              <Link to="/terms" className="text-sm hover:text-primary transition-colors">{t("footer.terms")}</Link>
+              <Link to="/privacy" className="text-sm hover:text-primary transition-colors">{t("footer.privacy")}</Link>
+              <Link to="/signup" className="text-sm hover:text-primary transition-colors">{t("cta.creator.button")}</Link>
+            </div>
+          </div>
+
+          {/* Contact & Newsletter */}
+          <div className="space-y-4">
+            <h4 className="font-semibold text-primary-foreground text-sm uppercase tracking-wider">{t("footer.contact")}</h4>
+            <div className="flex flex-col gap-2.5">
+              <a href="tel:+243835377286" className="text-sm flex items-center gap-2 hover:text-primary transition-colors"><Phone className="h-3.5 w-3.5" />+243 835 377 286</a>
+              <a href="mailto:kitabushop5@gmail.com" className="text-sm flex items-center gap-2 hover:text-primary transition-colors"><Mail className="h-3.5 w-3.5" />kitabushop5@gmail.com</a>
+              <span className="text-sm flex items-center gap-2"><MapPin className="h-3.5 w-3.5" />Goma, RDC</span>
+            </div>
+            <div className="pt-2">
+              <p className="text-xs font-semibold text-primary-foreground mb-2">{t("footer.newsletter")}</p>
+              <div className="flex gap-2">
+                <Input placeholder={t("footer.newsletter.placeholder")} className="h-9 text-xs bg-primary-foreground/10 border-primary-foreground/10 text-primary-foreground placeholder:text-primary-foreground/30 rounded-full" />
+                <Button size="sm" className="rounded-full text-xs shrink-0">{t("footer.newsletter.button")}</Button>
               </div>
-            </div>
-          </div>
-
-          <div className="space-y-3">
-            <h4 className="font-sans text-sm font-semibold uppercase tracking-wider opacity-50">KitabuShop</h4>
-            <div className="flex flex-col gap-2 text-sm opacity-70">
-              <Link to="/catalog" className="hover:opacity-100 transition-opacity">{t("nav.catalog")}</Link>
-              <Link to="/about" className="hover:opacity-100 transition-opacity">{t("footer.about")}</Link>
-              <Link to="/terms" className="hover:opacity-100 transition-opacity">{t("footer.terms")}</Link>
-              <Link to="/privacy" className="hover:opacity-100 transition-opacity">{t("footer.privacy")}</Link>
-            </div>
-          </div>
-
-          <div className="space-y-3">
-            <h4 className="font-sans text-sm font-semibold uppercase tracking-wider opacity-50">{t("footer.newsletter")}</h4>
-            <div className="flex gap-2">
-              <Input placeholder={t("footer.newsletter.placeholder")} className="bg-white/10 border-white/20 text-[hsl(30,25%,97%)] placeholder:text-white/40 rounded-full" />
-              <Button size="sm" className="rounded-full shrink-0">{t("footer.newsletter.button")}</Button>
             </div>
           </div>
         </div>
 
-        <div className="mt-10 border-t border-white/10 pt-6 text-center text-xs opacity-50">
-          © {new Date().getFullYear()} KitabuShop. {t("footer.rights")}
+        <div className="mt-10 pt-6 border-t border-primary-foreground/10 flex flex-col sm:flex-row items-center justify-between gap-3">
+          <p className="text-xs text-primary-foreground/40">© {new Date().getFullYear()} KitabuShop. {t("footer.rights")}</p>
+          <p className="text-xs text-primary-foreground/40">{t("footer.tagline")}</p>
         </div>
       </div>
     </footer>
