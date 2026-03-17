@@ -11,9 +11,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Switch } from "@/components/ui/switch";
 import { origins, genres, categories, bookLanguages } from "@/data/constants";
-import { Upload, Check, ChevronRight, ChevronLeft, BookOpen, Image, Headphones, GraduationCap, FileText, Newspaper, Loader2, Package, Shield, AlertTriangle } from "lucide-react";
+import { Upload, Check, ChevronRight, ChevronLeft, BookOpen, Image, Headphones, GraduationCap, FileText, Newspaper, Loader2, Package, Shield, AlertTriangle, Palette } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import CoverCreator from "./CoverCreator";
 
 const typeConfig: Record<string, { icon: React.ElementType; label_fr: string; label_en: string; fileFormats: string }> = {
   ebook: { icon: BookOpen, label_fr: "📖 Roman / Essai / E-book", label_en: "📖 Novel / Essay / E-book", fileFormats: "PDF, EPUB" },
