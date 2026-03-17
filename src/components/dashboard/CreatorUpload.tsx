@@ -305,17 +305,38 @@ const CreatorUpload = () => {
           <CardHeader><CardTitle>{t("kdp.step2")}</CardTitle></CardHeader>
           <CardContent className="space-y-5">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-2">
+              <div className="space-y-3">
                 <Label>{t("kdp.cover")}</Label>
                 <input ref={coverRef} type="file" accept="image/*" className="hidden" onChange={handleCoverChange} />
-                <div onClick={() => coverRef.current?.click()} className="border-2 border-dashed border-border rounded-xl p-6 text-center cursor-pointer hover:border-primary transition-colors min-h-[200px] flex flex-col items-center justify-center">
+                <div onClick={() => coverRef.current?.click()} className="border-2 border-dashed border-border rounded-md p-6 text-center cursor-pointer hover:border-primary transition-colors min-h-[200px] flex flex-col items-center justify-center">
                   {coverPreview ? (
-                    <img src={coverPreview} alt="Cover preview" className="max-h-48 rounded-lg object-contain" />
+                    <img src={coverPreview} alt="Cover preview" className="max-h-48 rounded object-contain" />
                   ) : (
                     <><Upload className="h-10 w-10 mb-2 text-muted-foreground/50" /><p className="text-sm text-muted-foreground">{t("kdp.coverhelp")}</p></>
                   )}
                 </div>
                 {coverFile && <p className="text-xs text-muted-foreground">{coverFile.name}</p>}
+                <div className="text-center">
+                  <span className="text-xs text-muted-foreground">{lang === "fr" ? "ou" : "or"}</span>
+                </div>
+                <Button type="button" variant="outline" className="w-full rounded-sm gap-2 text-xs" onClick={() => setShowCoverCreator(true)}>
+                  <Palette className="h-4 w-4" />
+                  {lang === "fr" ? "Créer une couverture avec nos modèles" : "Create cover from templates"}
+                </Button>
+                <CoverCreator
+                  open={showCoverCreator}
+                  onClose={() => setShowCoverCreator(false)}
+                  onSelect={(dataUrl) => {
+                    setCoverPreview(dataUrl);
+                    // Convert data URL to File
+                    fetch(dataUrl).then(r => r.blob()).then(blob => {
+                      const file = new File([blob], "cover-generated.png", { type: "image/png" });
+                      setCoverFile(file);
+                    });
+                  }}
+                  bookTitle={title}
+                  authorName={authorName}
+                />
               </div>
               <div className="space-y-2">
                 <Label>{t("kdp.manuscript")}</Label>
