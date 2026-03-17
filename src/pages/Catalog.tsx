@@ -1,18 +1,17 @@
 import { useState } from "react";
-import { useSearchParams, Link } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import BookCard from "@/components/BookCard";
 import FilterBar from "@/components/FilterBar";
 import { useBooks } from "@/hooks/useBooks";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Search, LayoutGrid, List, BookOpen } from "lucide-react";
 
 const Catalog = () => {
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
   const [searchParams] = useSearchParams();
   const categoryParam = searchParams.get("category") || "";
   const searchParam = searchParams.get("search") || "";
@@ -23,7 +22,8 @@ const Catalog = () => {
   const [activeOrigin, setActiveOrigin] = useState("");
   const [activeGenre, setActiveGenre] = useState(genreParam);
   const [activeType, setActiveType] = useState(typeParam);
-  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const [viewMode, setViewMode] = useState<"grid" | "list">("list");
+  const [sortBy, setSortBy] = useState("featured");
 
   const { data: books = [], isLoading } = useBooks({
     category: categoryParam || undefined,
@@ -43,69 +43,93 @@ const Catalog = () => {
     revues_scientifiques: t("section.revues_scientifiques"),
     articles: t("section.articles"),
   };
-  const categoryTitle = categoryParam ? categoryTitleMap[categoryParam] || t("nav.catalog") : t("nav.catalog");
+  const pageTitle = categoryParam ? categoryTitleMap[categoryParam] || t("nav.catalog") : t("nav.catalog");
 
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
-      <main className="flex-1 container mx-auto px-4 py-8 space-y-6">
-        <h1 className="text-3xl font-bold md:text-4xl">{categoryTitle}</h1>
+      <main className="flex-1">
+        <div className="container mx-auto px-4 py-6">
+          <div className="flex gap-6">
+            {/* Left sidebar */}
+            <div className="hidden lg:block w-56 shrink-0">
+              <FilterBar
+                activeOrigin={activeOrigin}
+                activeGenre={activeGenre}
+                activeType={activeType}
+                onOriginChange={setActiveOrigin}
+                onGenreChange={setActiveGenre}
+                onTypeChange={setActiveType}
+              />
+            </div>
 
-        <div className="relative max-w-md">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder={t("nav.search")} className="pl-10 rounded-full" />
-        </div>
-
-        <FilterBar activeOrigin={activeOrigin} activeGenre={activeGenre} activeType={activeType} onOriginChange={setActiveOrigin} onGenreChange={setActiveGenre} onTypeChange={setActiveType} />
-
-        <div className="flex justify-end gap-2">
-          <Button variant={viewMode === "grid" ? "default" : "outline"} size="icon" onClick={() => setViewMode("grid")} className="rounded-lg">
-            <LayoutGrid className="h-4 w-4" />
-          </Button>
-          <Button variant={viewMode === "list" ? "default" : "outline"} size="icon" onClick={() => setViewMode("list")} className="rounded-lg">
-            <List className="h-4 w-4" />
-          </Button>
-        </div>
-
-        {isLoading ? (
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
-            {[...Array(10)].map((_, i) => (
-              <div key={i} className="space-y-3">
-                <Skeleton className="aspect-[2/3] rounded-xl" />
-                <Skeleton className="h-4 w-3/4" />
-                <Skeleton className="h-3 w-1/2" />
-              </div>
-            ))}
-          </div>
-        ) : books.length === 0 ? (
-          <div className="text-center py-16">
-            <BookOpen className="h-16 w-16 mx-auto text-muted-foreground/20 mb-4" />
-            <p className="text-muted-foreground">{t("common.noresults")}</p>
-          </div>
-        ) : viewMode === "grid" ? (
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
-            {books.map((book) => <BookCard key={book.id} book={book} />)}
-          </div>
-        ) : (
-          <div className="space-y-3">
-            {books.map((book) => (
-              <Link key={book.id} to={`/book/${book.id}`} className="flex gap-4 p-4 rounded-xl border border-border bg-card hover:shadow-md transition-shadow">
-                {book.cover_url ? (
-                  <img src={book.cover_url} alt={book.title} className="h-24 w-16 rounded-lg object-cover shrink-0" />
-                ) : (
-                  <div className="h-24 w-16 rounded-lg bg-muted flex items-center justify-center shrink-0">
-                    <BookOpen className="h-6 w-6 text-muted-foreground/30" />
-                  </div>
-                )}
-                <div className="flex-1 min-w-0">
-                  <h3 className="font-semibold truncate">{book.title}</h3>
-                  <p className="text-sm text-muted-foreground">{book.author_name} · {book.origin}</p>
-                  <p className="text-primary font-bold mt-1">${book.price.toFixed(2)}</p>
+            {/* Results */}
+            <div className="flex-1 min-w-0">
+              {/* Results header */}
+              <div className="flex items-center justify-between mb-4 pb-3 border-b border-border">
+                <div>
+                  <h1 className="text-lg font-bold">{pageTitle}</h1>
+                  {!isLoading && <p className="text-xs text-muted-foreground">{books.length} {lang === "fr" ? "résultats" : "results"}</p>}
                 </div>
-              </Link>
-            ))}
+                <div className="flex items-center gap-2">
+                  {/* Search */}
+                  <div className="relative hidden sm:block">
+                    <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+                    <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder={t("nav.search")} className="h-8 pl-8 pr-3 text-xs bg-secondary border border-border rounded-sm outline-none focus:ring-1 focus:ring-primary w-48" />
+                  </div>
+                  <Select value={sortBy} onValueChange={setSortBy}>
+                    <SelectTrigger className="h-8 w-36 text-xs rounded-sm">
+                      <SelectValue placeholder={lang === "fr" ? "Trier par" : "Sort by"} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="featured">{lang === "fr" ? "En vedette" : "Featured"}</SelectItem>
+                      <SelectItem value="price-low">{lang === "fr" ? "Prix ↑" : "Price: Low to High"}</SelectItem>
+                      <SelectItem value="price-high">{lang === "fr" ? "Prix ↓" : "Price: High to Low"}</SelectItem>
+                      <SelectItem value="rating">{lang === "fr" ? "Meilleures notes" : "Avg. Review"}</SelectItem>
+                      <SelectItem value="new">{lang === "fr" ? "Récents" : "Newest"}</SelectItem>
+                      <SelectItem value="sales">Best Sellers</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <div className="flex border border-border rounded-sm overflow-hidden">
+                    <button onClick={() => setViewMode("grid")} className={`p-1.5 ${viewMode === "grid" ? "bg-secondary" : ""}`}><LayoutGrid className="h-3.5 w-3.5" /></button>
+                    <button onClick={() => setViewMode("list")} className={`p-1.5 ${viewMode === "list" ? "bg-secondary" : ""}`}><List className="h-3.5 w-3.5" /></button>
+                  </div>
+                </div>
+              </div>
+
+              <p className="text-xs text-muted-foreground mb-4">{lang === "fr" ? "Consultez chaque page produit pour d'autres options d'achat." : "Check each product page for other buying options."}</p>
+
+              {isLoading ? (
+                <div className="space-y-4">
+                  {[...Array(5)].map((_, i) => (
+                    <div key={i} className="flex gap-4 py-4">
+                      <Skeleton className="h-36 w-24 rounded-sm" />
+                      <div className="flex-1 space-y-2">
+                        <Skeleton className="h-5 w-3/4" />
+                        <Skeleton className="h-3 w-1/2" />
+                        <Skeleton className="h-3 w-1/3" />
+                        <Skeleton className="h-6 w-20" />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : books.length === 0 ? (
+                <div className="text-center py-16">
+                  <BookOpen className="h-16 w-16 mx-auto text-muted-foreground/20 mb-4" />
+                  <p className="text-muted-foreground">{t("common.noresults")}</p>
+                </div>
+              ) : viewMode === "list" ? (
+                <div className="divide-y divide-border">
+                  {books.map((book) => <BookCard key={book.id} book={book} viewMode="list" />)}
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+                  {books.map((book) => <BookCard key={book.id} book={book} />)}
+                </div>
+              )}
+            </div>
           </div>
-        )}
+        </div>
       </main>
       <Footer />
     </div>
