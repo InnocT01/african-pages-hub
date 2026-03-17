@@ -7,12 +7,17 @@ import BookGrid from "@/components/BookGrid";
 import CreatorCTA from "@/components/CreatorCTA";
 import { useBooks } from "@/hooks/useBooks";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { LayoutGrid, List } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const Index = () => {
   const { t, lang } = useLanguage();
   const [activeOrigin, setActiveOrigin] = useState("");
   const [activeGenre, setActiveGenre] = useState("");
   const [activeType, setActiveType] = useState("");
+  const [viewMode, setViewMode] = useState<"grid" | "list">("list");
+  const [sortBy, setSortBy] = useState("featured");
 
   const hasFilters = activeOrigin || activeGenre || activeType;
 
@@ -34,27 +39,76 @@ const Index = () => {
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <Header />
+      <HeroSection />
       <main className="flex-1">
-        <HeroSection />
-        <div className="container mx-auto px-4 py-10 space-y-10">
-          <FilterBar activeOrigin={activeOrigin} activeGenre={activeGenre} activeType={activeType} onOriginChange={setActiveOrigin} onGenreChange={setActiveGenre} onTypeChange={setActiveType} />
+        <div className="container mx-auto px-4 py-6">
+          <div className="flex gap-6">
+            {/* Left sidebar filters - Amazon style */}
+            <div className="hidden lg:block w-56 shrink-0">
+              <FilterBar
+                activeOrigin={activeOrigin}
+                activeGenre={activeGenre}
+                activeType={activeType}
+                onOriginChange={setActiveOrigin}
+                onGenreChange={setActiveGenre}
+                onTypeChange={setActiveType}
+              />
+            </div>
 
-          {hasFilters ? (
-            <BookGrid title={lang === "fr" ? "Résultats" : "Results"} books={allBooks} loading={loadingAll} horizontal={false} />
-          ) : (
-            <>
-              <BookGrid title={`🔥 ${t("section.bestsellers")}`} books={bestsellers} categoryLink="/catalog" loading={loadingBest} />
-              <BookGrid title={`⭐ ${lang === "fr" ? "Coups de cœur" : "Editor's Picks"}`} books={topRated} categoryLink="/catalog" />
-              <BookGrid title={`🆕 ${t("section.new")}`} books={newReleases} categoryLink="/catalog" loading={loadingNew} />
+            {/* Main content */}
+            <div className="flex-1 min-w-0 space-y-8">
+              {/* Results header - Amazon style */}
+              {hasFilters && (
+                <div className="flex items-center justify-between pb-3 border-b border-border">
+                  <p className="text-sm text-muted-foreground">
+                    {allBooks.length} {lang === "fr" ? "résultats" : "results"}
+                  </p>
+                  <div className="flex items-center gap-2">
+                    <Select value={sortBy} onValueChange={setSortBy}>
+                      <SelectTrigger className="h-8 w-40 text-xs rounded-sm">
+                        <SelectValue placeholder={lang === "fr" ? "Trier par" : "Sort by"} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="featured">{lang === "fr" ? "En vedette" : "Featured"}</SelectItem>
+                        <SelectItem value="price-low">{lang === "fr" ? "Prix croissant" : "Price: Low to High"}</SelectItem>
+                        <SelectItem value="price-high">{lang === "fr" ? "Prix décroissant" : "Price: High to Low"}</SelectItem>
+                        <SelectItem value="rating">{lang === "fr" ? "Meilleures notes" : "Avg. Customer Review"}</SelectItem>
+                        <SelectItem value="new">{lang === "fr" ? "Date de publication" : "Publication Date"}</SelectItem>
+                        <SelectItem value="sales">Best Sellers</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <div className="flex border border-border rounded-sm overflow-hidden">
+                      <button onClick={() => setViewMode("grid")} className={`p-1.5 ${viewMode === "grid" ? "bg-secondary" : ""}`}><LayoutGrid className="h-3.5 w-3.5" /></button>
+                      <button onClick={() => setViewMode("list")} className={`p-1.5 ${viewMode === "list" ? "bg-secondary" : ""}`}><List className="h-3.5 w-3.5" /></button>
+                    </div>
+                  </div>
+                </div>
+              )}
 
-              <CreatorCTA />
+              {hasFilters ? (
+                <BookGrid
+                  title={lang === "fr" ? "Résultats" : "Results"}
+                  books={allBooks}
+                  loading={loadingAll}
+                  horizontal={false}
+                  viewMode={viewMode}
+                />
+              ) : (
+                <>
+                  <BookGrid title={`🔥 ${t("section.bestsellers")}`} books={bestsellers} categoryLink="/catalog" loading={loadingBest} />
+                  <BookGrid title={`⭐ ${lang === "fr" ? "Coups de cœur" : "Editor's Picks"}`} books={topRated} categoryLink="/catalog" />
+                  <BookGrid title={`🆕 ${t("section.new")}`} books={newReleases} categoryLink="/catalog" loading={loadingNew} />
 
-              <BookGrid title={t("section.literature")} books={literature} categoryLink="/catalog?category=literature" />
-              <BookGrid title={t("section.education")} books={education} categoryLink="/catalog?category=education" />
-              <BookGrid title={t("section.youth")} books={youth} categoryLink="/catalog?category=youth" />
-              <BookGrid title={t("section.diaspora")} books={diaspora} categoryLink="/catalog?category=diaspora" />
-            </>
-          )}
+                  <CreatorCTA />
+
+                  <BookGrid title={t("section.literature")} books={literature} categoryLink="/catalog?category=literature" />
+                  <BookGrid title={t("section.education")} books={education} categoryLink="/catalog?category=education" />
+                  <BookGrid title={t("section.youth")} books={youth} categoryLink="/catalog?category=youth" />
+                  <BookGrid title={t("section.diaspora")} books={diaspora} categoryLink="/catalog?category=diaspora" />
+                </>
+              )}
+            </div>
+          </div>
         </div>
       </main>
       <Footer />
