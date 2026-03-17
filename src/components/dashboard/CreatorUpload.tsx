@@ -59,6 +59,7 @@ const CreatorUpload = () => {
   const [coverFile, setCoverFile] = useState<File | null>(null);
   const [coverPreview, setCoverPreview] = useState<string | null>(null);
   const [manuscriptFile, setManuscriptFile] = useState<File | null>(null);
+  const [showCoverCreator, setShowCoverCreator] = useState(false);
 
   const coverRef = useRef<HTMLInputElement>(null);
   const manuscriptRef = useRef<HTMLInputElement>(null);
