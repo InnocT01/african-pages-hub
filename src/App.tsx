@@ -20,6 +20,8 @@ import About from "./pages/About";
 import Terms from "./pages/Terms";
 import Privacy from "./pages/Privacy";
 import NotFound from "./pages/NotFound";
+import AuthorProfile from "./pages/AuthorProfile";
+import HelpCenter from "./pages/HelpCenter";
 
 const queryClient = new QueryClient();
 
