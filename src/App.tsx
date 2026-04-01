@@ -20,6 +20,8 @@ import About from "./pages/About";
 import Terms from "./pages/Terms";
 import Privacy from "./pages/Privacy";
 import NotFound from "./pages/NotFound";
+import AuthorProfile from "./pages/AuthorProfile";
+import HelpCenter from "./pages/HelpCenter";
 
 const queryClient = new QueryClient();
 
@@ -49,6 +51,8 @@ const App = () => (
                   <Route path="/reader" element={<ReaderDashboard />} />
                 </Route>
 
+                <Route path="/author/:id" element={<AuthorProfile />} />
+                <Route path="/help" element={<HelpCenter />} />
                 <Route path="/about" element={<About />} />
                 <Route path="/terms" element={<Terms />} />
                 <Route path="/privacy" element={<Privacy />} />

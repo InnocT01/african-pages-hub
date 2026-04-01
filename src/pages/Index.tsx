@@ -7,9 +7,13 @@ import BookGrid from "@/components/BookGrid";
 import CreatorCTA from "@/components/CreatorCTA";
 import { useBooks } from "@/hooks/useBooks";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { LayoutGrid, List } from "lucide-react";
+import { useRecentlyViewed } from "@/hooks/useRecentlyViewed";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { LayoutGrid, List, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import type { Book } from "@/types/book";
 
 const Index = () => {
   const { t, lang } = useLanguage();
@@ -21,13 +25,20 @@ const Index = () => {
 
   const hasFilters = activeOrigin || activeGenre || activeType;
 
+  const sortByMap: Record<string, "sales" | "rating" | "created_at" | undefined> = {
+    featured: undefined, "price-low": undefined, "price-high": undefined,
+    rating: "rating", new: "created_at", sales: "sales",
+  };
+
   const filterOpts = {
     ...(activeOrigin ? { origin: activeOrigin } : {}),
     ...(activeGenre ? { genre: activeGenre } : {}),
     ...(activeType ? { content_type: activeType } : {}),
+    ...(hasFilters ? { limit: 50 as number } : {}),
+    sortBy: sortByMap[sortBy],
   };
 
-  const { data: allBooks = [], isLoading: loadingAll } = useBooks({ ...filterOpts, limit: hasFilters ? 50 : undefined });
+  const { data: allBooks = [], isLoading: loadingAll } = useBooks(filterOpts);
   const { data: newReleases = [], isLoading: loadingNew } = useBooks({ limit: 10 });
   const { data: bestsellers = [], isLoading: loadingBest } = useBooks({ limit: 10, sortBy: "sales" });
   const { data: topRated = [] } = useBooks({ limit: 10, sortBy: "rating" });
@@ -36,6 +47,33 @@ const Index = () => {
   const { data: youth = [] } = useBooks({ category: "youth", limit: 8 });
   const { data: diaspora = [] } = useBooks({ category: "diaspora", limit: 8 });
 
+  // Recently viewed books
+  const { viewedIds } = useRecentlyViewed();
+  const { data: recentlyViewed = [] } = useQuery({
+    queryKey: ["recently-viewed", viewedIds],
+    queryFn: async () => {
+      if (viewedIds.length === 0) return [];
+      const { data } = await supabase
+        .from("books")
+        .select("*")
+        .in("id", viewedIds.slice(0, 10))
+        .eq("status", "published");
+      if (!data) return [];
+      // Preserve order from viewedIds
+      return viewedIds
+        .map((id) => data.find((b: any) => b.id === id))
+        .filter(Boolean) as unknown as Book[];
+    },
+    enabled: viewedIds.length > 0,
+  });
+
+  // Client-side price sort for filtered view
+  const sortedBooks = hasFilters ? [...allBooks].sort((a, b) => {
+    if (sortBy === "price-low") return a.price - b.price;
+    if (sortBy === "price-high") return b.price - a.price;
+    return 0;
+  }) : allBooks;
+
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <Header />
@@ -43,7 +81,7 @@ const Index = () => {
       <main className="flex-1">
         <div className="container mx-auto px-4 py-6">
           <div className="flex gap-6">
-            {/* Left sidebar filters - Amazon style */}
+            {/* Left sidebar filters */}
             <div className="hidden lg:block w-56 shrink-0">
               <FilterBar
                 activeOrigin={activeOrigin}
@@ -57,11 +95,11 @@ const Index = () => {
 
             {/* Main content */}
             <div className="flex-1 min-w-0 space-y-8">
-              {/* Results header - Amazon style */}
+              {/* Results header */}
               {hasFilters && (
                 <div className="flex items-center justify-between pb-3 border-b border-border">
                   <p className="text-sm text-muted-foreground">
-                    {allBooks.length} {lang === "fr" ? "résultats" : "results"}
+                    {sortedBooks.length} {lang === "fr" ? "résultats" : "results"}
                   </p>
                   <div className="flex items-center gap-2">
                     <Select value={sortBy} onValueChange={setSortBy}>
@@ -88,16 +126,24 @@ const Index = () => {
               {hasFilters ? (
                 <BookGrid
                   title={lang === "fr" ? "Résultats" : "Results"}
-                  books={allBooks}
+                  books={sortedBooks}
                   loading={loadingAll}
                   horizontal={false}
                   viewMode={viewMode}
                 />
               ) : (
                 <>
-                  <BookGrid title={`🔥 ${t("section.bestsellers")}`} books={bestsellers} categoryLink="/catalog" loading={loadingBest} />
-                  <BookGrid title={`⭐ ${lang === "fr" ? "Coups de cœur" : "Editor's Picks"}`} books={topRated} categoryLink="/catalog" />
-                  <BookGrid title={`🆕 ${t("section.new")}`} books={newReleases} categoryLink="/catalog" loading={loadingNew} />
+                  <BookGrid title={`🔥 ${t("section.bestsellers")}`} books={bestsellers} categoryLink="/catalog?sort=sales" loading={loadingBest} />
+                  <BookGrid title={`⭐ ${lang === "fr" ? "Coups de cœur" : "Editor's Picks"}`} books={topRated} categoryLink="/catalog?sort=rating" />
+                  <BookGrid title={`🆕 ${t("section.new")}`} books={newReleases} categoryLink="/catalog?sort=new" loading={loadingNew} />
+
+                  {/* Recently viewed */}
+                  {recentlyViewed.length > 0 && (
+                    <BookGrid
+                      title={`🕐 ${lang === "fr" ? "Consultés récemment" : "Recently Viewed"}`}
+                      books={recentlyViewed}
+                    />
+                  )}
 
                   <CreatorCTA />
 

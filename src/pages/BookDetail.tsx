@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
-import { ArrowLeft, ShoppingCart, Eye, Headphones, BookOpen, Package, Star, MessageSquare, Truck, Share2, Heart, Check } from "lucide-react";
+import { ArrowLeft, ShoppingCart, Eye, Headphones, BookOpen, Package, Star, MessageSquare, Truck, Share2, Heart, Check, ChevronRight } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import BookGrid from "@/components/BookGrid";
@@ -12,6 +12,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useBook, useBooks } from "@/hooks/useBooks";
 import { useReviews, useCreateReview } from "@/hooks/useReviews";
+import { useWishlist, useToggleWishlist } from "@/hooks/useWishlist";
+import { useRecentlyViewed } from "@/hooks/useRecentlyViewed";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useCart } from "@/contexts/CartContext";
 import { useAuth } from "@/contexts/AuthContext";
@@ -28,11 +30,21 @@ const BookDetail = () => {
   const { data: related = [] } = useBooks({ category: book?.category, limit: 5 });
   const { data: reviews = [] } = useReviews(id);
   const createReview = useCreateReview();
+  const { data: wishlistIds = [] } = useWishlist();
+  const toggleWishlist = useToggleWishlist();
+  const { addViewed } = useRecentlyViewed();
 
   const [reviewRating, setReviewRating] = useState(5);
   const [reviewComment, setReviewComment] = useState("");
   const [showPreview, setShowPreview] = useState(false);
   const [showDelivery, setShowDelivery] = useState(false);
+
+  // Track recently viewed
+  useEffect(() => {
+    if (id) addViewed(id);
+  }, [id, addViewed]);
+
+  const isInWishlist = id ? wishlistIds.includes(id) : false;
 
   if (isLoading) {
     return (
@@ -69,13 +81,31 @@ const BookDetail = () => {
     }
   };
 
+  const handleToggleWishlist = () => {
+    if (!user) { toast.error(lang === "fr" ? "Connectez-vous" : "Sign in first"); return; }
+    toggleWishlist.mutate(book.id, {
+      onSuccess: (result) => {
+        toast.success(result.added
+          ? (lang === "fr" ? "Ajouté à la liste de souhaits" : "Added to wishlist")
+          : (lang === "fr" ? "Retiré de la liste de souhaits" : "Removed from wishlist"));
+      },
+    });
+  };
+
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
       <main className="flex-1 container mx-auto px-4 py-8">
-        <Button variant="ghost" size="sm" asChild className="mb-6 gap-1">
-          <Link to="/catalog"><ArrowLeft className="h-4 w-4" />{t("common.back")}</Link>
-        </Button>
+        {/* Breadcrumbs */}
+        <nav className="flex items-center gap-1.5 text-xs text-muted-foreground mb-6 flex-wrap">
+          <Link to="/" className="hover:text-primary">{lang === "fr" ? "Accueil" : "Home"}</Link>
+          <ChevronRight className="h-3 w-3" />
+          <Link to="/catalog" className="hover:text-primary">{lang === "fr" ? "Catalogue" : "Catalog"}</Link>
+          <ChevronRight className="h-3 w-3" />
+          <Link to={`/catalog?category=${book.category}`} className="hover:text-primary">{book.category}</Link>
+          <ChevronRight className="h-3 w-3" />
+          <span className="text-foreground truncate max-w-[200px]">{book.title}</span>
+        </nav>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-14">
           <div className="relative">
@@ -88,10 +118,17 @@ const BookDetail = () => {
             </div>
             {/* Badges */}
             <div className="absolute top-4 left-4 flex flex-col gap-2">
-              {book.is_new && <Badge className="bg-accent text-accent-foreground">Neuf</Badge>}
+              {book.is_new && <Badge className="bg-accent text-accent-foreground">{lang === "fr" ? "Neuf" : "New"}</Badge>}
               {book.on_sale && <Badge className="bg-destructive text-destructive-foreground">Promo</Badge>}
-              {book.featured && <Badge className="bg-primary text-primary-foreground gap-1"><Star className="h-3 w-3 fill-current" />Vedette</Badge>}
+              {book.featured && <Badge className="bg-primary text-primary-foreground gap-1"><Star className="h-3 w-3 fill-current" />{lang === "fr" ? "Vedette" : "Featured"}</Badge>}
             </div>
+            {/* Wishlist heart */}
+            <button
+              onClick={handleToggleWishlist}
+              className="absolute top-4 right-4 h-10 w-10 rounded-full bg-background/80 backdrop-blur-sm flex items-center justify-center shadow-md hover:scale-110 transition-transform"
+            >
+              <Heart className={`h-5 w-5 ${isInWishlist ? "fill-destructive text-destructive" : "text-muted-foreground"}`} />
+            </button>
           </div>
 
           <div className="space-y-5">
@@ -104,7 +141,12 @@ const BookDetail = () => {
               </div>
               <h1 className="text-3xl font-bold md:text-4xl">{book.title}</h1>
               {book.subtitle && <p className="text-lg text-muted-foreground mt-1">{book.subtitle}</p>}
-              <p className="text-lg text-muted-foreground mt-1">{t("book.by")} <span className="text-foreground font-medium">{book.author_name || "Auteur"}</span></p>
+              <p className="text-lg text-muted-foreground mt-1">
+                {t("book.by")}{" "}
+                <Link to={`/author/${book.author_id}`} className="text-primary font-medium hover:underline">
+                  {book.author_name || "Auteur"}
+                </Link>
+              </p>
               <p className="text-sm text-muted-foreground mt-1">{book.origin} · {book.genre}</p>
             </div>
 
@@ -151,6 +193,7 @@ const BookDetail = () => {
                   {book.page_count && <div className="flex justify-between"><dt className="text-muted-foreground">{t("book.pages")}</dt><dd>{book.page_count}</dd></div>}
                   {book.duration_minutes && <div className="flex justify-between"><dt className="text-muted-foreground">{t("book.minutes")}</dt><dd>{book.duration_minutes} min</dd></div>}
                   {book.isbn && <div className="flex justify-between"><dt className="text-muted-foreground">ISBN</dt><dd>{book.isbn}</dd></div>}
+                  {book.language && <div className="flex justify-between"><dt className="text-muted-foreground">{lang === "fr" ? "Langue" : "Language"}</dt><dd>{book.language}</dd></div>}
                   <div className="flex justify-between"><dt className="text-muted-foreground">{lang === "fr" ? "Ventes" : "Sales"}</dt><dd>{book.sales_count || 0}</dd></div>
                 </dl>
               </TabsContent>
@@ -160,9 +203,10 @@ const BookDetail = () => {
                   <div key={review.id} className="border border-border rounded-lg p-4 space-y-2">
                     <div className="flex items-center gap-2">
                       <div className="flex">{[...Array(5)].map((_, i) => <Star key={i} className={`h-3 w-3 ${i < review.rating ? "fill-primary text-primary" : "text-border"}`} />)}</div>
-                      <span className="text-xs text-muted-foreground">{(review as any).profiles?.display_name || "Lecteur"}</span>
+                      <span className="text-xs text-muted-foreground">{(review as any).profiles?.display_name || (lang === "fr" ? "Lecteur" : "Reader")}</span>
                     </div>
                     {review.comment && <p className="text-sm text-muted-foreground">{review.comment}</p>}
+                    <p className="text-[10px] text-muted-foreground">{new Date(review.created_at).toLocaleDateString()}</p>
                   </div>
                 ))}
                 {user && (
@@ -216,18 +260,17 @@ const BookDetail = () => {
                           ? "Kitabu Express assure la livraison de vos livres brochés partout en RDC et en Afrique de l'Est. Ajoutez d'abord le livre au panier, puis choisissez l'option de livraison au checkout."
                           : "Kitabu Express delivers your paperback books throughout DRC and East Africa. Add the book to your cart first, then choose the delivery option at checkout."}
                       </p>
-                      <div className="flex gap-2">
-                        <Button className="rounded-full flex-1" onClick={() => { addToCart(book); setShowDelivery(false); toast.success(t("book.addtocart")); }}>
-                          <ShoppingCart className="h-4 w-4 mr-2" />{t("book.addtocart")}
-                        </Button>
-                      </div>
+                      <Button className="rounded-full w-full" onClick={() => { addToCart(book); setShowDelivery(false); toast.success(t("book.addtocart")); }}>
+                        <ShoppingCart className="h-4 w-4 mr-2" />{t("book.addtocart")}
+                      </Button>
                     </div>
                   </DialogContent>
                 </Dialog>
               )}
 
-              <Button variant="outline" className="rounded-full gap-2" onClick={() => { const el = document.querySelector('[value="reviews"]') as HTMLElement; el?.click(); }}>
-                <MessageSquare className="h-4 w-4" />{t("book.rate")}
+              <Button variant="outline" className="rounded-full gap-2" onClick={handleToggleWishlist}>
+                <Heart className={`h-4 w-4 ${isInWishlist ? "fill-destructive text-destructive" : ""}`} />
+                {isInWishlist ? (lang === "fr" ? "Dans ma liste" : "In Wishlist") : (lang === "fr" ? "Ajouter" : "Add to Wishlist")}
               </Button>
 
               <Button variant="ghost" className="rounded-full gap-2" onClick={handleShare}>
