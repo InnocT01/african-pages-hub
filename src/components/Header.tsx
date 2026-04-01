@@ -174,6 +174,9 @@ const Header = () => {
             <Link to="/about" className="px-3 h-9 flex items-center text-xs whitespace-nowrap hover:outline hover:outline-1 hover:outline-white/20 rounded-sm transition-all">
               {t("nav.about")}
             </Link>
+            <Link to="/help" className="px-3 h-9 flex items-center text-xs whitespace-nowrap hover:outline hover:outline-1 hover:outline-white/20 rounded-sm transition-all">
+              {lang === "fr" ? "Aide" : "Help"}
+            </Link>
             {isAuthenticated && user?.role === "creator" && (
               <Link to="/creator?tab=upload" className="ml-auto px-3 h-9 flex items-center gap-1.5 text-xs font-bold whitespace-nowrap" style={{ color: "hsl(var(--header-accent))" }}>
                 <PenTool className="h-3.5 w-3.5" />Kitabu Direct Publishing
