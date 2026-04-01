@@ -51,6 +51,8 @@ const App = () => (
                   <Route path="/reader" element={<ReaderDashboard />} />
                 </Route>
 
+                <Route path="/author/:id" element={<AuthorProfile />} />
+                <Route path="/help" element={<HelpCenter />} />
                 <Route path="/about" element={<About />} />
                 <Route path="/terms" element={<Terms />} />
                 <Route path="/privacy" element={<Privacy />} />

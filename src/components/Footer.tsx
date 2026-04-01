@@ -23,7 +23,7 @@ const Footer = () => {
               <h4 className="font-bold text-sm">{lang === "fr" ? "Mieux nous connaître" : "Get to Know Us"}</h4>
               <div className="flex flex-col gap-2 text-xs opacity-70">
                 <Link to="/about" className="hover:underline">{t("nav.about")}</Link>
-                <Link to="/about" className="hover:underline">{lang === "fr" ? "Carrières" : "Careers"}</Link>
+                <Link to="/help" className="hover:underline">{lang === "fr" ? "Centre d'aide" : "Help Center"}</Link>
                 <a href="https://web.facebook.com/profile.php?id=61579692684157" target="_blank" rel="noopener noreferrer" className="hover:underline">Blog</a>
               </div>
             </div>
