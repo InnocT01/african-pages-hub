@@ -10,7 +10,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useRecentlyViewed } from "@/hooks/useRecentlyViewed";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { LayoutGrid, List, Clock } from "lucide-react";
+import { LayoutGrid, List } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import type { Book } from "@/types/book";
@@ -47,27 +47,18 @@ const Index = () => {
   const { data: youth = [] } = useBooks({ category: "youth", limit: 8 });
   const { data: diaspora = [] } = useBooks({ category: "diaspora", limit: 8 });
 
-  // Recently viewed books
   const { viewedIds } = useRecentlyViewed();
   const { data: recentlyViewed = [] } = useQuery({
     queryKey: ["recently-viewed", viewedIds],
     queryFn: async () => {
       if (viewedIds.length === 0) return [];
-      const { data } = await supabase
-        .from("books")
-        .select("*")
-        .in("id", viewedIds.slice(0, 10))
-        .eq("status", "published");
+      const { data } = await supabase.from("books").select("*").in("id", viewedIds.slice(0, 10)).eq("status", "published");
       if (!data) return [];
-      // Preserve order from viewedIds
-      return viewedIds
-        .map((id) => data.find((b: any) => b.id === id))
-        .filter(Boolean) as unknown as Book[];
+      return viewedIds.map((id) => data.find((b: any) => b.id === id)).filter(Boolean) as unknown as Book[];
     },
     enabled: viewedIds.length > 0,
   });
 
-  // Client-side price sort for filtered view
   const sortedBooks = hasFilters ? [...allBooks].sort((a, b) => {
     if (sortBy === "price-low") return a.price - b.price;
     if (sortBy === "price-high") return b.price - a.price;
@@ -95,7 +86,6 @@ const Index = () => {
 
             {/* Main content */}
             <div className="flex-1 min-w-0 space-y-8">
-              {/* Results header */}
               {hasFilters && (
                 <div className="flex items-center justify-between pb-3 border-b border-border">
                   <p className="text-sm text-muted-foreground">
@@ -103,7 +93,7 @@ const Index = () => {
                   </p>
                   <div className="flex items-center gap-2">
                     <Select value={sortBy} onValueChange={setSortBy}>
-                      <SelectTrigger className="h-8 w-40 text-xs rounded-sm">
+                      <SelectTrigger className="h-8 w-40 text-xs rounded-lg">
                         <SelectValue placeholder={lang === "fr" ? "Trier par" : "Sort by"} />
                       </SelectTrigger>
                       <SelectContent>
@@ -115,7 +105,7 @@ const Index = () => {
                         <SelectItem value="sales">Best Sellers</SelectItem>
                       </SelectContent>
                     </Select>
-                    <div className="flex border border-border rounded-sm overflow-hidden">
+                    <div className="flex border border-border rounded-lg overflow-hidden">
                       <button onClick={() => setViewMode("grid")} className={`p-1.5 ${viewMode === "grid" ? "bg-secondary" : ""}`}><LayoutGrid className="h-3.5 w-3.5" /></button>
                       <button onClick={() => setViewMode("list")} className={`p-1.5 ${viewMode === "list" ? "bg-secondary" : ""}`}><List className="h-3.5 w-3.5" /></button>
                     </div>
@@ -124,25 +114,15 @@ const Index = () => {
               )}
 
               {hasFilters ? (
-                <BookGrid
-                  title={lang === "fr" ? "Résultats" : "Results"}
-                  books={sortedBooks}
-                  loading={loadingAll}
-                  horizontal={false}
-                  viewMode={viewMode}
-                />
+                <BookGrid title={lang === "fr" ? "Résultats" : "Results"} books={sortedBooks} loading={loadingAll} horizontal={false} viewMode={viewMode} />
               ) : (
                 <>
                   <BookGrid title={`🔥 ${t("section.bestsellers")}`} books={bestsellers} categoryLink="/catalog?sort=sales" loading={loadingBest} />
                   <BookGrid title={`⭐ ${lang === "fr" ? "Coups de cœur" : "Editor's Picks"}`} books={topRated} categoryLink="/catalog?sort=rating" />
                   <BookGrid title={`🆕 ${t("section.new")}`} books={newReleases} categoryLink="/catalog?sort=new" loading={loadingNew} />
 
-                  {/* Recently viewed */}
                   {recentlyViewed.length > 0 && (
-                    <BookGrid
-                      title={`🕐 ${lang === "fr" ? "Consultés récemment" : "Recently Viewed"}`}
-                      books={recentlyViewed}
-                    />
+                    <BookGrid title={`🕐 ${lang === "fr" ? "Consultés récemment" : "Recently Viewed"}`} books={recentlyViewed} />
                   )}
 
                   <CreatorCTA />
