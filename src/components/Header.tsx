@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Search, ShoppingCart, Menu, X, Globe, User, ChevronDown, BookOpen, PenTool, Phone, Mail } from "lucide-react";
+import { Search, ShoppingCart, Menu, X, Globe, ChevronDown, PenTool, DollarSign } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useCurrency, currencies } from "@/contexts/CurrencyContext";
 import { useCart } from "@/contexts/CartContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { Badge } from "@/components/ui/badge";
@@ -11,6 +12,7 @@ import logoImg from "@/assets/logo-kitabushop.png";
 
 const Header = () => {
   const { t, lang, setLang } = useLanguage();
+  const { currency, setCurrency } = useCurrency();
   const { itemCount } = useCart();
   const { user, isAuthenticated, logout } = useAuth();
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -35,7 +37,7 @@ const Header = () => {
 
   return (
     <header className="sticky top-0 z-50">
-      {/* Top dark bar - Amazon style */}
+      {/* Top bar */}
       <div className="header-bg">
         <div className="container mx-auto px-4">
           <div className="flex h-14 items-center gap-4">
@@ -48,18 +50,18 @@ const Header = () => {
               </div>
             </Link>
 
-            {/* Delivery location */}
+            {/* Deliver to */}
             <div className="hidden lg:flex flex-col text-[10px] leading-tight opacity-70 mr-2">
               <span>{lang === "fr" ? "Livrer à" : "Deliver to"}</span>
               <span className="font-bold text-xs" style={{ color: "hsl(var(--header-fg))" }}>🇨🇩 Goma, RDC</span>
             </div>
 
-            {/* Search - dominant */}
+            {/* Search */}
             <form onSubmit={handleSearch} className="hidden md:flex flex-1 max-w-3xl">
               <div className="flex w-full">
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <button className="flex items-center gap-1 px-3 text-xs font-medium rounded-l-md bg-secondary text-secondary-foreground border-r border-border whitespace-nowrap">
+                    <button className="flex items-center gap-1 px-3 text-xs font-medium rounded-l-lg bg-secondary text-secondary-foreground border-r border-border whitespace-nowrap">
                       {lang === "fr" ? "Tous" : "All"} <ChevronDown className="h-3 w-3" />
                     </button>
                   </DropdownMenuTrigger>
@@ -76,19 +78,36 @@ const Header = () => {
                   placeholder={t("nav.search")}
                   className="flex-1 h-10 px-4 text-sm bg-background text-foreground outline-none border-0"
                 />
-                <button type="submit" className="px-4 rounded-r-md" style={{ backgroundColor: "hsl(var(--header-accent))" }}>
+                <button type="submit" className="px-4 rounded-r-lg" style={{ backgroundColor: "hsl(var(--header-accent))" }}>
                   <Search className="h-4 w-4 text-white" />
                 </button>
               </div>
             </form>
 
-            {/* Right actions */}
+            {/* Right */}
             <div className="flex items-center gap-1 ml-auto">
               {/* Language */}
               <button onClick={() => setLang(lang === "fr" ? "en" : "fr")} className="hidden sm:flex flex-col items-center px-2 py-1 text-[10px] hover:outline hover:outline-1 hover:outline-white/30 rounded-sm transition-all" style={{ color: "hsl(var(--header-fg))" }}>
                 <Globe className="h-4 w-4 mb-0.5" />
                 <span className="font-bold">{lang === "fr" ? "FR" : "EN"}</span>
               </button>
+
+              {/* Currency */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button className="hidden sm:flex flex-col items-center px-2 py-1 text-[10px] hover:outline hover:outline-1 hover:outline-white/30 rounded-sm transition-all" style={{ color: "hsl(var(--header-fg))" }}>
+                    <DollarSign className="h-4 w-4 mb-0.5" />
+                    <span className="font-bold">{currency}</span>
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  {currencies.map((c) => (
+                    <DropdownMenuItem key={c} onClick={() => setCurrency(c)} className={currency === c ? "bg-secondary font-semibold" : ""}>
+                      {c}
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
 
               {/* Account */}
               {isAuthenticated ? (
@@ -136,7 +155,6 @@ const Header = () => {
                 <span className="text-xs font-bold hidden sm:inline">{lang === "fr" ? "Panier" : "Cart"}</span>
               </Link>
 
-              {/* Mobile toggle */}
               <button className="md:hidden p-2" style={{ color: "hsl(var(--header-fg))" }} onClick={() => setMobileOpen(!mobileOpen)}>
                 {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
               </button>
@@ -145,7 +163,7 @@ const Header = () => {
         </div>
       </div>
 
-      {/* Secondary nav bar */}
+      {/* Secondary nav */}
       <div className="nav-bg border-b border-border/20">
         <div className="container mx-auto px-4">
           <nav className="hidden md:flex items-center gap-0 text-sm overflow-x-auto scrollbar-hide">
@@ -162,7 +180,6 @@ const Header = () => {
                 <DropdownMenuItem asChild><Link to="/catalog?category=diaspora">{t("nav.diaspora")}</Link></DropdownMenuItem>
                 <DropdownMenuItem asChild><Link to="/catalog?type=bd">{t("nav.bd")}</Link></DropdownMenuItem>
                 <DropdownMenuItem asChild><Link to="/catalog?category=manuels_scolaires">{t("nav.manuels")}</Link></DropdownMenuItem>
-                <DropdownMenuItem asChild><Link to="/catalog?category=revues_scientifiques">{t("nav.revues")}</Link></DropdownMenuItem>
                 <DropdownMenuItem asChild><Link to="/catalog?category=national_languages">{t("nav.national_languages")}</Link></DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -188,11 +205,11 @@ const Header = () => {
 
       {/* Mobile menu */}
       {mobileOpen && (
-        <div className="md:hidden bg-background border-b border-border px-4 pb-4 pt-2 shadow-lg animate-in slide-in-from-top-2">
+        <div className="md:hidden bg-background border-b border-border px-4 pb-4 pt-2 shadow-lg">
           <form onSubmit={handleSearch} className="mb-3">
             <div className="flex">
-              <input value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder={t("nav.search")} className="flex-1 h-10 px-4 text-sm bg-secondary rounded-l-md outline-none" />
-              <button type="submit" className="px-4 rounded-r-md bg-primary text-primary-foreground"><Search className="h-4 w-4" /></button>
+              <input value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder={t("nav.search")} className="flex-1 h-10 px-4 text-sm bg-secondary rounded-l-lg outline-none" />
+              <button type="submit" className="px-4 rounded-r-lg bg-primary text-primary-foreground"><Search className="h-4 w-4" /></button>
             </div>
           </form>
           <div className="flex flex-col gap-0.5">
@@ -200,9 +217,23 @@ const Header = () => {
               <Link key={link.path} to={link.path} className="py-2.5 px-2 text-sm hover:bg-secondary rounded-md" onClick={() => setMobileOpen(false)}>{link.label}</Link>
             ))}
             <hr className="my-2 border-border" />
-            <button onClick={() => setLang(lang === "fr" ? "en" : "fr")} className="flex items-center gap-2 py-2.5 px-2 text-sm hover:bg-secondary rounded-md">
-              <Globe className="h-4 w-4" />{lang === "fr" ? "English" : "Français"}
-            </button>
+            <div className="flex items-center gap-3 py-2 px-2">
+              <button onClick={() => setLang(lang === "fr" ? "en" : "fr")} className="flex items-center gap-2 text-sm hover:bg-secondary rounded-md px-2 py-1">
+                <Globe className="h-4 w-4" />{lang === "fr" ? "English" : "Français"}
+              </button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button className="flex items-center gap-1 text-sm hover:bg-secondary rounded-md px-2 py-1">
+                    <DollarSign className="h-4 w-4" />{currency}
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                  {currencies.map((c) => (
+                    <DropdownMenuItem key={c} onClick={() => setCurrency(c)}>{c}</DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
             {isAuthenticated ? (
               <>
                 <Link to={dashboardPath} className="py-2.5 px-2 font-medium text-sm hover:bg-secondary rounded-md" onClick={() => setMobileOpen(false)}>{t("nav.dashboard")}</Link>
