@@ -2,11 +2,12 @@ import { Link } from "react-router-dom";
 import { Star, BookOpen, Truck } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useCurrency } from "@/contexts/CurrencyContext";
 import type { Book } from "@/types/book";
 
 const BookCard = ({ book, viewMode = "grid" }: { book: Book; viewMode?: "grid" | "list" }) => {
   const { lang } = useLanguage();
-  const effectivePrice = book.on_sale && book.sale_price ? book.sale_price : book.price;
+  const { format: formatPrice } = useCurrency();
   const hasPhysical = book.format === "paperback" || book.format === "both";
   const inStock = book.stock_count === null || book.stock_count > 0;
   const desc = lang === "fr" ? book.description_fr : book.description_en;
@@ -14,9 +15,8 @@ const BookCard = ({ book, viewMode = "grid" }: { book: Book; viewMode?: "grid" |
   if (viewMode === "list") {
     return (
       <Link to={`/book/${book.id}`} className="flex gap-4 py-4 border-b border-border hover:bg-secondary/30 transition-colors group">
-        {/* Cover */}
         <div className="shrink-0 w-28 md:w-36">
-          <div className="aspect-[2/3] rounded-sm overflow-hidden shadow-sm">
+          <div className="aspect-[2/3] rounded-md overflow-hidden shadow-sm">
             {book.cover_url ? (
               <img src={book.cover_url} alt={book.title} className="h-full w-full object-cover" loading="lazy" />
             ) : (
@@ -24,16 +24,12 @@ const BookCard = ({ book, viewMode = "grid" }: { book: Book; viewMode?: "grid" |
             )}
           </div>
         </div>
-
-        {/* Details - Amazon style */}
         <div className="flex-1 min-w-0 space-y-1">
           <h3 className="font-semibold text-base text-primary group-hover:text-accent transition-colors line-clamp-2 leading-snug">{book.title}</h3>
           {book.subtitle && <p className="text-sm text-muted-foreground line-clamp-1">{book.subtitle}</p>}
           <p className="text-xs text-muted-foreground">
-            {lang === "fr" ? "par" : "by"} <span className="text-primary/80">{book.author_name || "—"}</span> | {lang === "fr" ? "Vendu par" : "Sold by"}: KitabuShop
+            {lang === "fr" ? "par" : "by"} <span className="text-primary/80">{book.author_name || "—"}</span>
           </p>
-
-          {/* Rating */}
           <div className="flex items-center gap-1.5">
             <span className="text-xs font-medium">{book.rating?.toFixed(1) || "—"}</span>
             <div className="flex gap-px">
@@ -43,49 +39,41 @@ const BookCard = ({ book, viewMode = "grid" }: { book: Book; viewMode?: "grid" |
             </div>
             <span className="text-xs text-primary/70">({book.review_count || 0})</span>
           </div>
-
-          {/* Format badge */}
           <div className="flex items-center gap-2 pt-0.5">
             <Badge variant="outline" className="text-[10px] font-medium rounded-sm px-1.5 py-0">
               {book.format === "both" ? "Kindle + Broché" : book.format === "paperback" ? "Broché" : "Kindle Edition"}
             </Badge>
             {book.is_new && <Badge className="bg-accent text-accent-foreground text-[10px] rounded-sm px-1.5 py-0">{lang === "fr" ? "Nouveau" : "New"}</Badge>}
           </div>
-
-          {/* Price */}
           <div className="pt-1">
             {book.on_sale && book.sale_price ? (
               <div className="flex items-baseline gap-1.5">
-                <span className="text-xl font-bold text-foreground">${book.sale_price.toFixed(2)}</span>
-                <span className="text-xs text-muted-foreground line-through">${book.price.toFixed(2)}</span>
+                <span className="text-xl font-bold text-foreground">{formatPrice(book.sale_price)}</span>
+                <span className="text-xs text-muted-foreground line-through">{formatPrice(book.price)}</span>
                 <Badge className="bg-accent text-accent-foreground text-[10px] rounded-sm px-1 py-0">
                   -{Math.round((1 - book.sale_price / book.price) * 100)}%
                 </Badge>
               </div>
             ) : (
-              <span className="text-xl font-bold text-foreground">${book.price.toFixed(2)}</span>
+              <span className="text-xl font-bold text-foreground">{formatPrice(book.price)}</span>
             )}
           </div>
-
-          {/* Delivery info */}
           {hasPhysical && (
             <div className="flex items-center gap-1.5 text-xs text-muted-foreground pt-0.5">
               <Truck className="h-3 w-3" />
               <span>{inStock ? (lang === "fr" ? "Disponible — Kitabu Express" : "In Stock — Kitabu Express") : (lang === "fr" ? "Rupture de stock" : "Out of Stock")}</span>
             </div>
           )}
-
           {desc && <p className="text-xs text-muted-foreground line-clamp-2 pt-1">{desc}</p>}
         </div>
       </Link>
     );
   }
 
-  // Grid mode
   return (
     <Link to={`/book/${book.id}`} className="block group">
       <div className="space-y-2">
-        <div className="relative aspect-[2/3] rounded-sm overflow-hidden shadow-sm group-hover:shadow-md transition-shadow">
+        <div className="relative aspect-[2/3] rounded-md overflow-hidden shadow-sm group-hover:shadow-lg transition-all group-hover:scale-[1.02] duration-200">
           {book.cover_url ? (
             <img src={book.cover_url} alt={book.title} className="h-full w-full object-cover" loading="lazy" />
           ) : (
@@ -101,6 +89,14 @@ const BookCard = ({ book, viewMode = "grid" }: { book: Book; viewMode?: "grid" |
               {lang === "fr" ? "Nouveau" : "New"}
             </Badge>
           )}
+          {book.featured && (
+            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-2">
+              <span className="text-[9px] text-white font-semibold flex items-center gap-0.5">
+                <Star className="h-2.5 w-2.5 fill-[hsl(var(--kente-gold))] text-[hsl(var(--kente-gold))]" />
+                {lang === "fr" ? "Vedette" : "Featured"}
+              </span>
+            </div>
+          )}
         </div>
         <div className="space-y-0.5 px-0.5">
           <h3 className="text-xs font-semibold line-clamp-2 leading-snug group-hover:text-primary transition-colors">{book.title}</h3>
@@ -114,11 +110,11 @@ const BookCard = ({ book, viewMode = "grid" }: { book: Book; viewMode?: "grid" |
           <div className="flex items-baseline gap-1">
             {book.on_sale && book.sale_price ? (
               <>
-                <span className="text-sm font-bold">${book.sale_price.toFixed(2)}</span>
-                <span className="text-[10px] text-muted-foreground line-through">${book.price.toFixed(2)}</span>
+                <span className="text-sm font-bold">{formatPrice(book.sale_price)}</span>
+                <span className="text-[10px] text-muted-foreground line-through">{formatPrice(book.price)}</span>
               </>
             ) : (
-              <span className="text-sm font-bold">${book.price.toFixed(2)}</span>
+              <span className="text-sm font-bold">{formatPrice(book.price)}</span>
             )}
           </div>
           <p className="text-[9px] text-muted-foreground">
