@@ -14,8 +14,9 @@ export default {
     },
     extend: {
       fontFamily: {
-        sans: ["Inter", "system-ui", "sans-serif"],
+        sans: ["Space Grotesk", "Inter", "system-ui", "sans-serif"],
         display: ["Playfair Display", "serif"],
+        grotesk: ["Space Grotesk", "system-ui", "sans-serif"],
       },
       colors: {
         border: "hsl(var(--border))",
@@ -61,11 +62,20 @@ export default {
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
         },
+        gold: "hsl(var(--kente-gold))",
       },
       borderRadius: {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
+        "2xl": "1rem",
+        "3xl": "1.5rem",
+      },
+      boxShadow: {
+        "glass": "0 4px 30px hsl(var(--foreground) / 0.04)",
+        "glass-lg": "0 8px 40px hsl(var(--foreground) / 0.08)",
+        "glow": "0 0 30px hsl(var(--primary) / 0.15)",
+        "glow-lg": "0 0 60px hsl(var(--primary) / 0.2)",
       },
       keyframes: {
         "accordion-down": {

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Search, ShoppingCart, Menu, X, Globe, ChevronDown, PenTool, DollarSign } from "lucide-react";
+import { Search, ShoppingCart, Menu, X, Globe, ChevronDown, PenTool, DollarSign, Sparkles, User, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useCurrency, currencies } from "@/contexts/CurrencyContext";
@@ -17,6 +17,7 @@ const Header = () => {
   const { user, isAuthenticated, logout } = useAuth();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [searchFocused, setSearchFocused] = useState(false);
   const navigate = useNavigate();
 
   const handleSearch = (e: React.FormEvent) => {
@@ -26,136 +27,151 @@ const Header = () => {
 
   const dashboardPath = user?.role === "creator" ? "/creator" : "/reader";
 
-  const navLinks = [
-    { label: lang === "fr" ? "Catalogue" : "Catalog", path: "/catalog" },
-    { label: lang === "fr" ? "Nouveautés" : "New & Trending", path: "/catalog?sort=new" },
-    { label: "Best Sellers", path: "/catalog?sort=sales" },
+  const categories = [
     { label: lang === "fr" ? "Littérature" : "Literature", path: "/catalog?category=literature" },
     { label: lang === "fr" ? "Éducation" : "Education", path: "/catalog?category=education" },
     { label: lang === "fr" ? "Jeunesse" : "Youth", path: "/catalog?category=youth" },
+    { label: lang === "fr" ? "Diaspora" : "Diaspora", path: "/catalog?category=diaspora" },
+    { label: "BD", path: "/catalog?type=bd" },
+    { label: lang === "fr" ? "Best-sellers" : "Best Sellers", path: "/catalog?sort=sales" },
+    { label: lang === "fr" ? "Nouveautés" : "New", path: "/catalog?sort=new" },
   ];
 
   return (
     <header className="sticky top-0 z-50">
-      {/* Top bar */}
-      <div className="header-bg">
+      {/* Main bar — glass morphism */}
+      <div className="bg-card/80 backdrop-blur-xl border-b border-border/50">
         <div className="container mx-auto px-4">
-          <div className="flex h-14 items-center gap-4">
+          <div className="flex h-16 items-center gap-3">
             {/* Logo */}
-            <Link to="/" className="flex shrink-0 items-center gap-2 mr-4">
-              <img src={logoImg} alt="KitabuShop" className="h-8 w-auto brightness-0 invert" />
+            <Link to="/" className="flex shrink-0 items-center gap-2.5 mr-2 group">
+              <div className="relative">
+                <img src={logoImg} alt="KitabuShop" className="h-8 w-auto" />
+                <div className="absolute -inset-1 bg-primary/20 rounded-full blur-lg opacity-0 group-hover:opacity-100 transition-opacity" />
+              </div>
               <div className="hidden sm:block">
-                <span className="text-base font-extrabold tracking-tight" style={{ color: "hsl(var(--header-accent))" }}>KitabuShop</span>
-                <span className="text-[9px] block -mt-1 opacity-60">.com</span>
+                <span className="text-lg font-extrabold tracking-tight gradient-text">Kitabu</span>
+                <span className="text-lg font-light text-foreground/60">Shop</span>
               </div>
             </Link>
 
-            {/* Deliver to */}
-            <div className="hidden lg:flex flex-col text-[10px] leading-tight opacity-70 mr-2">
-              <span>{lang === "fr" ? "Livrer à" : "Deliver to"}</span>
-              <span className="font-bold text-xs" style={{ color: "hsl(var(--header-fg))" }}>🇨🇩 Goma, RDC</span>
-            </div>
-
             {/* Search */}
-            <form onSubmit={handleSearch} className="hidden md:flex flex-1 max-w-3xl">
-              <div className="flex w-full">
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <button className="flex items-center gap-1 px-3 text-xs font-medium rounded-l-lg bg-secondary text-secondary-foreground border-r border-border whitespace-nowrap">
-                      {lang === "fr" ? "Tous" : "All"} <ChevronDown className="h-3 w-3" />
-                    </button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="start">
-                    <DropdownMenuItem onClick={() => navigate("/catalog")}>{lang === "fr" ? "Tous les livres" : "All Books"}</DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => navigate("/catalog?category=literature")}>{lang === "fr" ? "Littérature" : "Literature"}</DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => navigate("/catalog?category=education")}>{lang === "fr" ? "Éducation" : "Education"}</DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => navigate("/catalog?category=youth")}>{lang === "fr" ? "Jeunesse" : "Youth"}</DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
+            <form onSubmit={handleSearch} className="hidden md:flex flex-1 max-w-xl mx-4">
+              <div className={`flex w-full rounded-2xl transition-all duration-300 ${searchFocused ? "ring-2 ring-primary/30 shadow-glow" : "ring-1 ring-border"}`}>
                 <input
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder={t("nav.search")}
-                  className="flex-1 h-10 px-4 text-sm bg-background text-foreground outline-none border-0"
+                  onFocus={() => setSearchFocused(true)}
+                  onBlur={() => setSearchFocused(false)}
+                  placeholder={lang === "fr" ? "Rechercher un livre, un auteur..." : "Search books, authors..."}
+                  className="flex-1 h-10 px-4 text-sm bg-transparent outline-none rounded-l-2xl placeholder:text-muted-foreground/50"
                 />
-                <button type="submit" className="px-4 rounded-r-lg" style={{ backgroundColor: "hsl(var(--header-accent))" }}>
-                  <Search className="h-4 w-4 text-white" />
+                <button type="submit" className="px-4 rounded-r-2xl bg-primary text-primary-foreground hover:bg-primary/90 transition-colors">
+                  <Search className="h-4 w-4" />
                 </button>
               </div>
             </form>
 
-            {/* Right */}
+            {/* Right actions */}
             <div className="flex items-center gap-1 ml-auto">
               {/* Language */}
-              <button onClick={() => setLang(lang === "fr" ? "en" : "fr")} className="hidden sm:flex flex-col items-center px-2 py-1 text-[10px] hover:outline hover:outline-1 hover:outline-white/30 rounded-sm transition-all" style={{ color: "hsl(var(--header-fg))" }}>
-                <Globe className="h-4 w-4 mb-0.5" />
-                <span className="font-bold">{lang === "fr" ? "FR" : "EN"}</span>
+              <button
+                onClick={() => setLang(lang === "fr" ? "en" : "fr")}
+                className="hidden sm:flex items-center gap-1.5 px-3 py-2 text-xs font-medium rounded-xl hover:bg-secondary transition-colors"
+              >
+                <Globe className="h-3.5 w-3.5 text-muted-foreground" />
+                <span>{lang === "fr" ? "FR" : "EN"}</span>
               </button>
 
               {/* Currency */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <button className="hidden sm:flex flex-col items-center px-2 py-1 text-[10px] hover:outline hover:outline-1 hover:outline-white/30 rounded-sm transition-all" style={{ color: "hsl(var(--header-fg))" }}>
-                    <DollarSign className="h-4 w-4 mb-0.5" />
-                    <span className="font-bold">{currency}</span>
+                  <button className="hidden sm:flex items-center gap-1 px-3 py-2 text-xs font-medium rounded-xl hover:bg-secondary transition-colors">
+                    <span className="text-muted-foreground">{currency}</span>
+                    <ChevronDown className="h-3 w-3 text-muted-foreground" />
                   </button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
+                <DropdownMenuContent align="end" className="rounded-xl">
                   {currencies.map((c) => (
-                    <DropdownMenuItem key={c} onClick={() => setCurrency(c)} className={currency === c ? "bg-secondary font-semibold" : ""}>
+                    <DropdownMenuItem key={c} onClick={() => setCurrency(c)} className={`rounded-lg ${currency === c ? "bg-primary/10 text-primary font-semibold" : ""}`}>
                       {c}
                     </DropdownMenuItem>
                   ))}
                 </DropdownMenuContent>
               </DropdownMenu>
 
+              {/* KDP shortcut */}
+              {isAuthenticated && user?.role === "creator" && (
+                <Link
+                  to="/creator?tab=upload"
+                  className="hidden lg:flex items-center gap-1.5 px-3 py-2 text-xs font-semibold rounded-xl bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
+                >
+                  <PenTool className="h-3.5 w-3.5" />
+                  <span>KDP</span>
+                </Link>
+              )}
+
+              {/* Wishlist */}
+              <Link to={isAuthenticated ? "/reader" : "/login"} className="hidden sm:flex items-center p-2 rounded-xl hover:bg-secondary transition-colors">
+                <Heart className="h-4.5 w-4.5 text-muted-foreground" />
+              </Link>
+
               {/* Account */}
               {isAuthenticated ? (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <button className="flex flex-col items-start px-2 py-1 text-[10px] hover:outline hover:outline-1 hover:outline-white/30 rounded-sm transition-all" style={{ color: "hsl(var(--header-fg))" }}>
-                      <span className="opacity-60">{lang === "fr" ? "Bonjour," : "Hello,"} {user?.name?.split(" ")[0]}</span>
-                      <span className="font-bold text-xs flex items-center gap-0.5">{lang === "fr" ? "Compte & Listes" : "Account & Lists"} <ChevronDown className="h-2.5 w-2.5" /></span>
+                    <button className="flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-secondary transition-colors">
+                      <div className="h-7 w-7 rounded-full bg-primary/10 flex items-center justify-center">
+                        <span className="text-xs font-bold text-primary">{user?.name?.charAt(0)?.toUpperCase() || "?"}</span>
+                      </div>
+                      <div className="hidden lg:block text-left">
+                        <p className="text-xs font-semibold leading-tight">{user?.name?.split(" ")[0]}</p>
+                        <p className="text-[10px] text-muted-foreground leading-tight">{user?.role === "creator" ? "Créateur" : "Lecteur"}</p>
+                      </div>
+                      <ChevronDown className="h-3 w-3 text-muted-foreground hidden lg:block" />
                     </button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-52">
-                    <div className="px-3 py-2 border-b border-border">
-                      <p className="text-sm font-medium truncate">{user?.name}</p>
-                      <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
+                  <DropdownMenuContent align="end" className="w-56 rounded-xl p-1">
+                    <div className="px-3 py-2.5">
+                      <p className="text-sm font-semibold">{user?.name}</p>
+                      <p className="text-xs text-muted-foreground">{user?.email}</p>
                     </div>
-                    <DropdownMenuItem asChild><Link to={dashboardPath}>{t("nav.dashboard")}</Link></DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem asChild className="rounded-lg"><Link to={dashboardPath}>{t("nav.dashboard")}</Link></DropdownMenuItem>
                     {user?.role === "creator" && (
-                      <DropdownMenuItem asChild><Link to="/creator?tab=upload">Kitabu Direct Publishing</Link></DropdownMenuItem>
+                      <DropdownMenuItem asChild className="rounded-lg">
+                        <Link to="/creator?tab=upload" className="flex items-center gap-2">
+                          <PenTool className="h-3.5 w-3.5" />Kitabu Direct Publishing
+                        </Link>
+                      </DropdownMenuItem>
                     )}
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={() => logout()} className="text-destructive">{t("nav.logout")}</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => logout()} className="rounded-lg text-destructive">{t("nav.logout")}</DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
               ) : (
-                <button onClick={() => navigate("/login")} className="flex flex-col items-start px-2 py-1 text-[10px] hover:outline hover:outline-1 hover:outline-white/30 rounded-sm transition-all" style={{ color: "hsl(var(--header-fg))" }}>
-                  <span className="opacity-60">{lang === "fr" ? "Bonjour, identifiez-vous" : "Hello, Sign in"}</span>
-                  <span className="font-bold text-xs flex items-center gap-0.5">{lang === "fr" ? "Compte & Listes" : "Account & Lists"} <ChevronDown className="h-2.5 w-2.5" /></span>
-                </button>
+                <div className="flex items-center gap-1.5">
+                  <Button variant="ghost" size="sm" onClick={() => navigate("/login")} className="rounded-xl text-xs font-medium">
+                    {t("nav.login")}
+                  </Button>
+                  <Button size="sm" onClick={() => navigate("/signup")} className="rounded-xl text-xs font-semibold">
+                    {t("nav.signup")}
+                  </Button>
+                </div>
               )}
 
-              {/* Orders */}
-              <Link to={isAuthenticated ? (user?.role === "creator" ? "/creator?tab=books" : "/reader") : "/login"} className="hidden sm:flex flex-col items-start px-2 py-1 text-[10px] hover:outline hover:outline-1 hover:outline-white/30 rounded-sm transition-all" style={{ color: "hsl(var(--header-fg))" }}>
-                <span className="opacity-60">{lang === "fr" ? "Retours" : "Returns"}</span>
-                <span className="font-bold text-xs">{lang === "fr" ? "& Commandes" : "& Orders"}</span>
-              </Link>
-
               {/* Cart */}
-              <Link to="/cart" className="flex items-end gap-0.5 px-2 py-1 hover:outline hover:outline-1 hover:outline-white/30 rounded-sm transition-all relative" style={{ color: "hsl(var(--header-fg))" }}>
-                <div className="relative">
-                  <ShoppingCart className="h-6 w-6" />
-                  {itemCount > 0 && (
-                    <span className="absolute -top-1.5 -right-1 text-[10px] font-extrabold" style={{ color: "hsl(var(--header-accent))" }}>{itemCount}</span>
-                  )}
-                </div>
-                <span className="text-xs font-bold hidden sm:inline">{lang === "fr" ? "Panier" : "Cart"}</span>
+              <Link to="/cart" className="relative flex items-center p-2 rounded-xl hover:bg-secondary transition-colors ml-1">
+                <ShoppingCart className="h-5 w-5" />
+                {itemCount > 0 && (
+                  <span className="absolute -top-0.5 -right-0.5 h-4.5 min-w-[18px] px-1 flex items-center justify-center text-[10px] font-bold bg-accent text-accent-foreground rounded-full">
+                    {itemCount}
+                  </span>
+                )}
               </Link>
 
-              <button className="md:hidden p-2" style={{ color: "hsl(var(--header-fg))" }} onClick={() => setMobileOpen(!mobileOpen)}>
+              {/* Mobile menu */}
+              <button className="md:hidden p-2 rounded-xl hover:bg-secondary transition-colors" onClick={() => setMobileOpen(!mobileOpen)}>
                 {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
               </button>
             </div>
@@ -163,91 +179,68 @@ const Header = () => {
         </div>
       </div>
 
-      {/* Secondary nav */}
-      <div className="nav-bg border-b border-border/20">
+      {/* Category nav — subtle */}
+      <div className="bg-card/60 backdrop-blur-lg border-b border-border/30 hidden md:block">
         <div className="container mx-auto px-4">
-          <nav className="hidden md:flex items-center gap-0 text-sm overflow-x-auto scrollbar-hide">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <button className="flex items-center gap-1.5 px-3 h-9 font-bold text-xs whitespace-nowrap hover:outline hover:outline-1 hover:outline-white/20 rounded-sm transition-all">
-                  <Menu className="h-3.5 w-3.5" />{lang === "fr" ? "Toutes les catégories" : "All Categories"}
-                </button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="start" className="w-56">
-                <DropdownMenuItem asChild><Link to="/catalog?category=literature">{t("nav.literature")}</Link></DropdownMenuItem>
-                <DropdownMenuItem asChild><Link to="/catalog?category=education">{t("nav.education")}</Link></DropdownMenuItem>
-                <DropdownMenuItem asChild><Link to="/catalog?category=youth">{t("nav.youth")}</Link></DropdownMenuItem>
-                <DropdownMenuItem asChild><Link to="/catalog?category=diaspora">{t("nav.diaspora")}</Link></DropdownMenuItem>
-                <DropdownMenuItem asChild><Link to="/catalog?type=bd">{t("nav.bd")}</Link></DropdownMenuItem>
-                <DropdownMenuItem asChild><Link to="/catalog?category=manuels_scolaires">{t("nav.manuels")}</Link></DropdownMenuItem>
-                <DropdownMenuItem asChild><Link to="/catalog?category=national_languages">{t("nav.national_languages")}</Link></DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-            {navLinks.map((link) => (
-              <Link key={link.path} to={link.path} className="px-3 h-9 flex items-center text-xs whitespace-nowrap hover:outline hover:outline-1 hover:outline-white/20 rounded-sm transition-all">
-                {link.label}
+          <nav className="flex items-center gap-0.5 h-10 overflow-x-auto scrollbar-hide">
+            {categories.map((cat) => (
+              <Link
+                key={cat.path}
+                to={cat.path}
+                className="px-3 py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-secondary rounded-lg transition-all whitespace-nowrap"
+              >
+                {cat.label}
               </Link>
             ))}
-            <Link to="/about" className="px-3 h-9 flex items-center text-xs whitespace-nowrap hover:outline hover:outline-1 hover:outline-white/20 rounded-sm transition-all">
-              {t("nav.about")}
+            <Link to="/catalog" className="px-3 py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-secondary rounded-lg transition-all whitespace-nowrap ml-auto">
+              {lang === "fr" ? "Tout explorer →" : "Explore all →"}
             </Link>
-            <Link to="/help" className="px-3 h-9 flex items-center text-xs whitespace-nowrap hover:outline hover:outline-1 hover:outline-white/20 rounded-sm transition-all">
-              {lang === "fr" ? "Aide" : "Help"}
-            </Link>
-            {isAuthenticated && user?.role === "creator" && (
-              <Link to="/creator?tab=upload" className="ml-auto px-3 h-9 flex items-center gap-1.5 text-xs font-bold whitespace-nowrap" style={{ color: "hsl(var(--header-accent))" }}>
-                <PenTool className="h-3.5 w-3.5" />Kitabu Direct Publishing
-              </Link>
-            )}
           </nav>
         </div>
       </div>
 
       {/* Mobile menu */}
       {mobileOpen && (
-        <div className="md:hidden bg-background border-b border-border px-4 pb-4 pt-2 shadow-lg">
+        <div className="md:hidden bg-card/95 backdrop-blur-xl border-b border-border px-4 pb-4 pt-2 animate-fade-up">
           <form onSubmit={handleSearch} className="mb-3">
-            <div className="flex">
-              <input value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder={t("nav.search")} className="flex-1 h-10 px-4 text-sm bg-secondary rounded-l-lg outline-none" />
-              <button type="submit" className="px-4 rounded-r-lg bg-primary text-primary-foreground"><Search className="h-4 w-4" /></button>
+            <div className="flex rounded-xl ring-1 ring-border">
+              <input value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder={t("nav.search")} className="flex-1 h-10 px-4 text-sm bg-transparent rounded-l-xl outline-none" />
+              <button type="submit" className="px-4 rounded-r-xl bg-primary text-primary-foreground"><Search className="h-4 w-4" /></button>
             </div>
           </form>
           <div className="flex flex-col gap-0.5">
-            {navLinks.map((link) => (
-              <Link key={link.path} to={link.path} className="py-2.5 px-2 text-sm hover:bg-secondary rounded-md" onClick={() => setMobileOpen(false)}>{link.label}</Link>
+            {categories.map((cat) => (
+              <Link key={cat.path} to={cat.path} className="py-2.5 px-3 text-sm hover:bg-secondary rounded-xl transition-colors" onClick={() => setMobileOpen(false)}>
+                {cat.label}
+              </Link>
             ))}
             <hr className="my-2 border-border" />
-            <div className="flex items-center gap-3 py-2 px-2">
-              <button onClick={() => setLang(lang === "fr" ? "en" : "fr")} className="flex items-center gap-2 text-sm hover:bg-secondary rounded-md px-2 py-1">
+            <div className="flex items-center gap-2 py-2 px-3">
+              <button onClick={() => setLang(lang === "fr" ? "en" : "fr")} className="flex items-center gap-2 text-sm hover:bg-secondary rounded-xl px-3 py-1.5">
                 <Globe className="h-4 w-4" />{lang === "fr" ? "English" : "Français"}
               </button>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <button className="flex items-center gap-1 text-sm hover:bg-secondary rounded-md px-2 py-1">
+                  <button className="flex items-center gap-1 text-sm hover:bg-secondary rounded-xl px-3 py-1.5">
                     <DollarSign className="h-4 w-4" />{currency}
                   </button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent>
+                <DropdownMenuContent className="rounded-xl">
                   {currencies.map((c) => (
-                    <DropdownMenuItem key={c} onClick={() => setCurrency(c)}>{c}</DropdownMenuItem>
+                    <DropdownMenuItem key={c} onClick={() => setCurrency(c)} className="rounded-lg">{c}</DropdownMenuItem>
                   ))}
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
             {isAuthenticated ? (
               <>
-                <Link to={dashboardPath} className="py-2.5 px-2 font-medium text-sm hover:bg-secondary rounded-md" onClick={() => setMobileOpen(false)}>{t("nav.dashboard")}</Link>
-                {user?.role === "creator" && (
-                  <Link to="/creator?tab=upload" className="py-2.5 px-2 font-medium text-sm text-primary hover:bg-secondary rounded-md flex items-center gap-2" onClick={() => setMobileOpen(false)}>
-                    <PenTool className="h-4 w-4" />Kitabu Direct Publishing
-                  </Link>
-                )}
-                <button onClick={() => { logout(); setMobileOpen(false); }} className="text-left py-2.5 px-2 text-sm text-destructive hover:bg-secondary rounded-md">{t("nav.logout")}</button>
+                <Link to={dashboardPath} className="py-2.5 px-3 font-medium text-sm hover:bg-secondary rounded-xl" onClick={() => setMobileOpen(false)}>{t("nav.dashboard")}</Link>
+                <button onClick={() => { logout(); setMobileOpen(false); }} className="text-left py-2.5 px-3 text-sm text-destructive hover:bg-secondary rounded-xl">{t("nav.logout")}</button>
               </>
             ) : (
               <>
-                <Link to="/login" className="py-2.5 px-2 text-sm hover:bg-secondary rounded-md" onClick={() => setMobileOpen(false)}>{t("nav.login")}</Link>
-                <Link to="/signup" className="py-2.5 px-2 font-semibold text-primary text-sm hover:bg-secondary rounded-md" onClick={() => setMobileOpen(false)}>{t("nav.signup")}</Link>
+                <Link to="/login" className="py-2.5 px-3 text-sm hover:bg-secondary rounded-xl" onClick={() => setMobileOpen(false)}>{t("nav.login")}</Link>
+                <Link to="/signup" className="py-2.5 px-3 font-semibold text-primary text-sm hover:bg-secondary rounded-xl" onClick={() => setMobileOpen(false)}>{t("nav.signup")}</Link>
               </>
             )}
           </div>

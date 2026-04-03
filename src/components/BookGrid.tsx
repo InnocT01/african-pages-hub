@@ -24,22 +24,26 @@ const BookGrid = ({ title, books, categoryLink, loading, horizontal = true, view
 
   const scroll = (dir: "left" | "right") => {
     if (!scrollRef.current) return;
-    scrollRef.current.scrollBy({ left: dir === "left" ? -300 : 300, behavior: "smooth" });
+    scrollRef.current.scrollBy({ left: dir === "left" ? -320 : 320, behavior: "smooth" });
   };
 
   return (
-    <section className="space-y-3">
+    <section className="space-y-4">
       <div className="flex items-center justify-between">
-        <h2 className="text-lg font-bold">{title}</h2>
+        <h2 className="text-xl font-extrabold tracking-tight">{title}</h2>
         <div className="flex items-center gap-2">
           {horizontal && books.length > 4 && (
             <div className="hidden md:flex gap-1">
-              <Button variant="outline" size="icon" className="h-7 w-7 rounded-sm" onClick={() => scroll("left")}><ChevronLeft className="h-3.5 w-3.5" /></Button>
-              <Button variant="outline" size="icon" className="h-7 w-7 rounded-sm" onClick={() => scroll("right")}><ChevronRight className="h-3.5 w-3.5" /></Button>
+              <button onClick={() => scroll("left")} className="h-8 w-8 rounded-xl flex items-center justify-center border border-border hover:bg-secondary transition-colors">
+                <ChevronLeft className="h-4 w-4" />
+              </button>
+              <button onClick={() => scroll("right")} className="h-8 w-8 rounded-xl flex items-center justify-center border border-border hover:bg-secondary transition-colors">
+                <ChevronRight className="h-4 w-4" />
+              </button>
             </div>
           )}
           {categoryLink && (
-            <Button variant="ghost" size="sm" asChild className="gap-1 text-primary font-semibold text-xs">
+            <Button variant="ghost" size="sm" asChild className="gap-1.5 text-primary font-semibold text-xs rounded-xl hover:bg-primary/10">
               <Link to={categoryLink}>{t("section.viewall")}<ArrowRight className="h-3 w-3" /></Link>
             </Button>
           )}
@@ -48,29 +52,29 @@ const BookGrid = ({ title, books, categoryLink, loading, horizontal = true, view
       {loading ? (
         <div className="flex gap-4 overflow-hidden">
           {[...Array(6)].map((_, i) => (
-            <div key={i} className="shrink-0 w-[130px] space-y-2">
-              <Skeleton className="aspect-[2/3] rounded-sm" />
-              <Skeleton className="h-3 w-3/4" />
-              <Skeleton className="h-2 w-1/2" />
+            <div key={i} className="shrink-0 w-[140px] space-y-3">
+              <Skeleton className="aspect-[2/3] rounded-2xl" />
+              <Skeleton className="h-3 w-3/4 rounded-lg" />
+              <Skeleton className="h-2.5 w-1/2 rounded-lg" />
             </div>
           ))}
         </div>
       ) : horizontal ? (
-        <div ref={scrollRef} className="flex gap-3 overflow-x-auto scrollbar-hide pb-2 snap-x snap-mandatory">
+        <div ref={scrollRef} className="flex gap-4 overflow-x-auto scrollbar-hide pb-2 snap-x snap-mandatory">
           {books.map((book) => (
-            <div key={book.id} className="snap-start shrink-0 w-[130px] sm:w-[150px]">
+            <div key={book.id} className="snap-start shrink-0 w-[140px] sm:w-[160px]">
               <BookCard book={book} />
             </div>
           ))}
         </div>
       ) : viewMode === "list" ? (
-        <div className="divide-y divide-border">
+        <div className="divide-y divide-border/50">
           {books.map((book) => (
             <BookCard key={book.id} book={book} viewMode="list" />
           ))}
         </div>
       ) : (
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
+        <div className="grid grid-cols-2 gap-5 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
           {books.map((book) => (
             <BookCard key={book.id} book={book} />
           ))}
