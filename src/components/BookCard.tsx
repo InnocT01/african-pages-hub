@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Star, BookOpen, Truck } from "lucide-react";
+import { Star, BookOpen, Truck, Heart } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useCurrency } from "@/contexts/CurrencyContext";
@@ -14,9 +14,9 @@ const BookCard = ({ book, viewMode = "grid" }: { book: Book; viewMode?: "grid" |
 
   if (viewMode === "list") {
     return (
-      <Link to={`/book/${book.id}`} className="flex gap-4 py-4 border-b border-border hover:bg-secondary/30 transition-colors group">
-        <div className="shrink-0 w-28 md:w-36">
-          <div className="aspect-[2/3] rounded-md overflow-hidden shadow-sm">
+      <Link to={`/book/${book.id}`} className="flex gap-5 py-5 group">
+        <div className="shrink-0 w-24 md:w-32">
+          <div className="aspect-[2/3] rounded-xl overflow-hidden shadow-glass group-hover:shadow-glass-lg transition-all duration-300 group-hover:scale-[1.02]">
             {book.cover_url ? (
               <img src={book.cover_url} alt={book.title} className="h-full w-full object-cover" loading="lazy" />
             ) : (
@@ -24,47 +24,45 @@ const BookCard = ({ book, viewMode = "grid" }: { book: Book; viewMode?: "grid" |
             )}
           </div>
         </div>
-        <div className="flex-1 min-w-0 space-y-1">
-          <h3 className="font-semibold text-base text-primary group-hover:text-accent transition-colors line-clamp-2 leading-snug">{book.title}</h3>
+        <div className="flex-1 min-w-0 space-y-2">
+          <h3 className="font-bold text-base group-hover:text-primary transition-colors line-clamp-2 leading-snug">{book.title}</h3>
           {book.subtitle && <p className="text-sm text-muted-foreground line-clamp-1">{book.subtitle}</p>}
           <p className="text-xs text-muted-foreground">
-            {lang === "fr" ? "par" : "by"} <span className="text-primary/80">{book.author_name || "—"}</span>
+            {lang === "fr" ? "par" : "by"} <span className="text-primary/80 font-medium">{book.author_name || "—"}</span>
           </p>
-          <div className="flex items-center gap-1.5">
-            <span className="text-xs font-medium">{book.rating?.toFixed(1) || "—"}</span>
-            <div className="flex gap-px">
+          <div className="flex items-center gap-2">
+            <div className="flex gap-0.5">
               {[...Array(5)].map((_, i) => (
-                <Star key={i} className={`h-3 w-3 ${i < Math.round(book.rating || 0) ? "star-fill" : "text-border"}`} />
+                <Star key={i} className={`h-3.5 w-3.5 ${i < Math.round(book.rating || 0) ? "star-fill" : "text-border"}`} />
               ))}
             </div>
-            <span className="text-xs text-primary/70">({book.review_count || 0})</span>
+            <span className="text-xs text-muted-foreground">({book.review_count || 0})</span>
           </div>
-          <div className="flex items-center gap-2 pt-0.5">
-            <Badge variant="outline" className="text-[10px] font-medium rounded-sm px-1.5 py-0">
-              {book.format === "both" ? "Kindle + Broché" : book.format === "paperback" ? "Broché" : "Kindle Edition"}
+          <div className="flex flex-wrap items-center gap-2">
+            <Badge variant="outline" className="text-[10px] font-medium rounded-lg px-2 py-0.5 border-border/50">
+              {book.format === "both" ? "E-book + Broché" : book.format === "paperback" ? "Broché" : "E-book"}
             </Badge>
-            {book.is_new && <Badge className="bg-accent text-accent-foreground text-[10px] rounded-sm px-1.5 py-0">{lang === "fr" ? "Nouveau" : "New"}</Badge>}
+            {book.is_new && <Badge className="bg-primary text-primary-foreground text-[10px] rounded-lg px-2 py-0.5">{lang === "fr" ? "Nouveau" : "New"}</Badge>}
           </div>
           <div className="pt-1">
             {book.on_sale && book.sale_price ? (
-              <div className="flex items-baseline gap-1.5">
-                <span className="text-xl font-bold text-foreground">{formatPrice(book.sale_price)}</span>
+              <div className="flex items-baseline gap-2">
+                <span className="text-xl font-extrabold">{formatPrice(book.sale_price)}</span>
                 <span className="text-xs text-muted-foreground line-through">{formatPrice(book.price)}</span>
-                <Badge className="bg-accent text-accent-foreground text-[10px] rounded-sm px-1 py-0">
+                <Badge className="bg-accent text-accent-foreground text-[10px] rounded-lg px-1.5 py-0">
                   -{Math.round((1 - book.sale_price / book.price) * 100)}%
                 </Badge>
               </div>
             ) : (
-              <span className="text-xl font-bold text-foreground">{formatPrice(book.price)}</span>
+              <span className="text-xl font-extrabold">{formatPrice(book.price)}</span>
             )}
           </div>
           {hasPhysical && (
-            <div className="flex items-center gap-1.5 text-xs text-muted-foreground pt-0.5">
-              <Truck className="h-3 w-3" />
-              <span>{inStock ? (lang === "fr" ? "Disponible — Kitabu Express" : "In Stock — Kitabu Express") : (lang === "fr" ? "Rupture de stock" : "Out of Stock")}</span>
+            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+              <Truck className="h-3.5 w-3.5" />
+              <span>{inStock ? (lang === "fr" ? "En stock · Kitabu Express" : "In Stock · Kitabu Express") : (lang === "fr" ? "Rupture de stock" : "Out of Stock")}</span>
             </div>
           )}
-          {desc && <p className="text-xs text-muted-foreground line-clamp-2 pt-1">{desc}</p>}
         </div>
       </Link>
     );
@@ -72,53 +70,55 @@ const BookCard = ({ book, viewMode = "grid" }: { book: Book; viewMode?: "grid" |
 
   return (
     <Link to={`/book/${book.id}`} className="block group">
-      <div className="space-y-2">
-        <div className="relative aspect-[2/3] rounded-md overflow-hidden shadow-sm group-hover:shadow-lg transition-all group-hover:scale-[1.02] duration-200">
+      <div className="space-y-3">
+        <div className="relative aspect-[2/3] rounded-2xl overflow-hidden shadow-glass group-hover:shadow-glass-lg transition-all duration-500 group-hover:scale-[1.03]">
           {book.cover_url ? (
             <img src={book.cover_url} alt={book.title} className="h-full w-full object-cover" loading="lazy" />
           ) : (
             <div className="h-full w-full bg-muted flex items-center justify-center"><BookOpen className="h-8 w-8 text-muted-foreground/20" /></div>
           )}
+          {/* Overlay on hover */}
+          <div className="absolute inset-0 bg-gradient-to-t from-foreground/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+          
           {book.on_sale && (
-            <Badge className="absolute top-1.5 left-1.5 bg-accent text-accent-foreground text-[9px] rounded-sm px-1 py-0">
+            <Badge className="absolute top-2 left-2 bg-accent text-accent-foreground text-[9px] rounded-lg px-2 py-0.5 font-bold shadow-sm">
               -{Math.round((1 - (book.sale_price || book.price) / book.price) * 100)}%
             </Badge>
           )}
           {book.is_new && (
-            <Badge className="absolute top-1.5 right-1.5 bg-primary text-primary-foreground text-[9px] rounded-sm px-1 py-0">
+            <Badge className="absolute top-2 right-2 bg-primary text-primary-foreground text-[9px] rounded-lg px-2 py-0.5 font-bold shadow-sm">
               {lang === "fr" ? "Nouveau" : "New"}
             </Badge>
           )}
-          {book.featured && (
-            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-2">
-              <span className="text-[9px] text-white font-semibold flex items-center gap-0.5">
-                <Star className="h-2.5 w-2.5 fill-[hsl(var(--kente-gold))] text-[hsl(var(--kente-gold))]" />
-                {lang === "fr" ? "Vedette" : "Featured"}
-              </span>
+          {book.featured && !book.on_sale && !book.is_new && (
+            <div className="absolute top-2 left-2">
+              <Star className="h-4 w-4 fill-gold text-gold drop-shadow-sm" />
             </div>
           )}
         </div>
-        <div className="space-y-0.5 px-0.5">
-          <h3 className="text-xs font-semibold line-clamp-2 leading-snug group-hover:text-primary transition-colors">{book.title}</h3>
-          <p className="text-[10px] text-muted-foreground">{book.author_name || "—"}</p>
-          <div className="flex items-center gap-0.5">
-            {[...Array(5)].map((_, i) => (
-              <Star key={i} className={`h-2.5 w-2.5 ${i < Math.round(book.rating || 0) ? "star-fill" : "text-border"}`} />
-            ))}
+        <div className="space-y-1 px-0.5">
+          <h3 className="text-sm font-bold line-clamp-2 leading-snug group-hover:text-primary transition-colors">{book.title}</h3>
+          <p className="text-xs text-muted-foreground font-medium">{book.author_name || "—"}</p>
+          <div className="flex items-center gap-1">
+            <div className="flex gap-px">
+              {[...Array(5)].map((_, i) => (
+                <Star key={i} className={`h-3 w-3 ${i < Math.round(book.rating || 0) ? "star-fill" : "text-border"}`} />
+              ))}
+            </div>
             <span className="text-[10px] text-muted-foreground ml-0.5">({book.review_count || 0})</span>
           </div>
-          <div className="flex items-baseline gap-1">
+          <div className="flex items-baseline gap-1.5">
             {book.on_sale && book.sale_price ? (
               <>
-                <span className="text-sm font-bold">{formatPrice(book.sale_price)}</span>
+                <span className="text-base font-extrabold">{formatPrice(book.sale_price)}</span>
                 <span className="text-[10px] text-muted-foreground line-through">{formatPrice(book.price)}</span>
               </>
             ) : (
-              <span className="text-sm font-bold">{formatPrice(book.price)}</span>
+              <span className="text-base font-extrabold">{formatPrice(book.price)}</span>
             )}
           </div>
-          <p className="text-[9px] text-muted-foreground">
-            {book.format === "both" ? "Kindle + Broché" : book.format === "paperback" ? "Broché" : "Kindle Edition"}
+          <p className="text-[10px] text-muted-foreground/70">
+            {book.format === "both" ? "E-book + Broché" : book.format === "paperback" ? "Broché" : "E-book"}
           </p>
         </div>
       </div>
