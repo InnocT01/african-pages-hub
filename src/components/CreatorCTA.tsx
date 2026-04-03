@@ -1,54 +1,61 @@
 import { Link } from "react-router-dom";
-import { PenTool, ArrowRight, BookOpen, TrendingUp, Shield, Globe, Users } from "lucide-react";
+import { PenTool, ArrowRight, BookOpen, TrendingUp, Shield, Globe, Sparkles, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 const CreatorCTA = () => {
   const { t, lang } = useLanguage();
 
+  const features = [
+    { icon: Zap, label: lang === "fr" ? "Publication en 3 min" : "Publish in 3 min" },
+    { icon: TrendingUp, label: lang === "fr" ? "Analytiques en temps réel" : "Real-time Analytics" },
+    { icon: Shield, label: lang === "fr" ? "Anti-plagiat IA" : "AI Plagiarism Check" },
+    { icon: Globe, label: lang === "fr" ? "Multi-devises & langues" : "Multi-currency & Languages" },
+  ];
+
   return (
-    <section className="rounded-xl overflow-hidden kente-pattern">
-      <div className="bg-gradient-to-r from-[hsl(var(--header-bg))] via-[hsl(var(--earth-brown))] to-[hsl(var(--header-bg))] p-6 md:p-10">
-        <div className="flex flex-col md:flex-row items-center gap-8">
-          <div className="flex-1 space-y-4 text-white">
-            <div className="flex items-center gap-2">
-              <div className="h-1.5 w-8 bg-gradient-to-r from-primary via-[hsl(var(--kente-gold))] to-accent rounded-full" />
-              <span className="text-xs font-bold uppercase tracking-widest text-[hsl(var(--kente-gold))]">Kitabu Direct Publishing</span>
+    <section className="rounded-3xl overflow-hidden relative">
+      <div className="absolute inset-0 bg-gradient-to-br from-foreground via-foreground/95 to-foreground/90" />
+      <div className="absolute inset-0 kente-pattern opacity-20" />
+      <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-primary via-gold to-accent" />
+      
+      <div className="relative z-10 p-8 md:p-12">
+        <div className="flex flex-col md:flex-row items-center gap-10">
+          <div className="flex-1 space-y-5">
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/20 backdrop-blur-sm">
+              <Sparkles className="h-3.5 w-3.5 text-gold" />
+              <span className="text-xs font-bold uppercase tracking-wider text-gold">Kitabu Direct Publishing</span>
             </div>
-            <h2 className="text-2xl font-extrabold md:text-3xl font-display leading-tight">
+            
+            <h2 className="text-3xl md:text-4xl font-extrabold text-background leading-tight font-display">
               {lang === "fr" 
-                ? "Publiez votre œuvre. Touchez l'Afrique."
-                : "Publish your work. Reach Africa."}
+                ? "Publiez. Partagez. Inspirez."
+                : "Publish. Share. Inspire."}
             </h2>
-            <p className="text-sm text-white/60 max-w-lg">
+            
+            <p className="text-sm text-background/50 max-w-lg leading-relaxed">
               {t("cta.creator.subtitle")}
             </p>
+            
             <div className="flex gap-3 pt-2">
-              <Button size="sm" asChild className="rounded-full gap-1.5 font-semibold text-xs bg-primary hover:bg-primary/90">
-                <Link to="/signup">{t("cta.creator.button")}<ArrowRight className="h-3.5 w-3.5" /></Link>
+              <Button size="lg" asChild className="rounded-2xl gap-2 font-bold bg-primary hover:bg-primary/90 shadow-glow">
+                <Link to="/signup">{t("cta.creator.button")}<ArrowRight className="h-4 w-4" /></Link>
               </Button>
-              <Button size="sm" asChild variant="outline" className="rounded-full text-xs border-white/20 text-white hover:bg-white/10">
+              <Button size="lg" asChild variant="outline" className="rounded-2xl border-background/20 text-background hover:bg-background/10 hover:text-background">
                 <Link to="/about">{lang === "fr" ? "En savoir plus" : "Learn More"}</Link>
               </Button>
             </div>
           </div>
-          <div className="hidden md:grid grid-cols-2 gap-3 text-xs text-white/80">
-            <div className="flex items-center gap-3 bg-white/5 backdrop-blur-sm rounded-lg p-4 border border-white/10">
-              <BookOpen className="h-5 w-5 text-[hsl(var(--kente-gold))] shrink-0" />
-              <span>{lang === "fr" ? "Publication en 3 étapes" : "3-Step Publishing"}</span>
-            </div>
-            <div className="flex items-center gap-3 bg-white/5 backdrop-blur-sm rounded-lg p-4 border border-white/10">
-              <TrendingUp className="h-5 w-5 text-primary shrink-0" />
-              <span>{lang === "fr" ? "Analytiques temps réel" : "Real-time Analytics"}</span>
-            </div>
-            <div className="flex items-center gap-3 bg-white/5 backdrop-blur-sm rounded-lg p-4 border border-white/10">
-              <Shield className="h-5 w-5 text-accent shrink-0" />
-              <span>{lang === "fr" ? "Anti-plagiat par IA" : "AI Plagiarism Check"}</span>
-            </div>
-            <div className="flex items-center gap-3 bg-white/5 backdrop-blur-sm rounded-lg p-4 border border-white/10">
-              <Globe className="h-5 w-5 text-[hsl(var(--kente-gold))] shrink-0" />
-              <span>{lang === "fr" ? "Multi-devises" : "Multi-currency"}</span>
-            </div>
+          
+          <div className="hidden md:grid grid-cols-2 gap-3 w-[360px] shrink-0">
+            {features.map((f, i) => (
+              <div key={i} className="flex items-center gap-3 bg-background/5 backdrop-blur-sm rounded-2xl p-4 border border-background/10 hover:bg-background/10 transition-colors">
+                <div className="h-9 w-9 rounded-xl bg-primary/20 flex items-center justify-center shrink-0">
+                  <f.icon className="h-4 w-4 text-gold" />
+                </div>
+                <span className="text-xs text-background/70 font-medium leading-tight">{f.label}</span>
+              </div>
+            ))}
           </div>
         </div>
       </div>
