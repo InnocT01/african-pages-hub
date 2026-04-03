@@ -1,0 +1,1 @@
+ALTER TABLE public.books DROP CONSTRAINT IF EXISTS books_author_id_fkey;
