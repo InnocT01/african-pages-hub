@@ -29,7 +29,7 @@ export const getAuthErrorMessage = (error: unknown, lang: Lang): string => {
   const authError = (error as AuthErrorLike) || {};
   const raw = (authError.message || "").toLowerCase();
   const code = (authError.status || "").toString().toLowerCase();
-  const dict = messages[lang];
+  const dict = messages[lang === "sw" || lang === "ln" ? "fr" : lang];
 
   if (raw.includes("invalid login credentials")) return dict.invalidCredentials;
   if (raw.includes("already registered") || raw.includes("user already registered") || raw.includes("already exists") || raw.includes("email exists")) {
