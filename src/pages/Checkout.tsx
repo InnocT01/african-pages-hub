@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Link } from "react-router-dom";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -8,41 +8,62 @@ import { useCart } from "@/contexts/CartContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
-import { Smartphone, CreditCard, CheckCircle, ArrowLeft, Loader2, Truck } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
+import { CreditCard, CheckCircle, ArrowLeft, Loader2, Truck, Upload, ImageIcon, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
 
 const Checkout = () => {
   const { t, lang } = useLanguage();
   const { items, total, clearCart } = useCart();
   const { user } = useAuth();
-  const [paymentMethod, setPaymentMethod] = useState("mobilemoney");
   const [confirmed, setConfirmed] = useState(false);
   const [processing, setProcessing] = useState(false);
   const [wantsDelivery, setWantsDelivery] = useState(false);
+  const [proofFile, setProofFile] = useState<File | null>(null);
+  const [proofPreview, setProofPreview] = useState<string | null>(null);
+  const [paymentNote, setPaymentNote] = useState("");
+  const proofRef = useRef<HTMLInputElement>(null);
 
   const hasPhysicalItems = items.some(i => i.book.format === "paperback" || i.book.format === "both");
 
+  const handleProofChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setProofFile(file);
+      const reader = new FileReader();
+      reader.onload = (ev) => setProofPreview(ev.target?.result as string);
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleConfirm = async () => {
     if (!user) { toast.error(lang === "fr" ? "Connectez-vous pour commander" : "Sign in to order"); return; }
+    if (!proofFile) {
+      toast.error(lang === "fr" ? "Veuillez joindre la capture de confirmation de paiement" : "Please attach the payment confirmation screenshot");
+      return;
+    }
     setProcessing(true);
     try {
       const { data: order, error: orderErr } = await supabase
         .from("orders")
-        .insert({ user_id: user.id, total, payment_method: paymentMethod, status: "completed", currency: "USD" } as any)
+        .insert({ user_id: user.id, total, payment_method: "bank_transfer", status: "pending_verification", currency: "USD" } as any)
         .select().single();
       if (orderErr) throw orderErr;
 
-      const orderItems = items.map((item) => ({ order_id: order.id, book_id: item.book.id, quantity: item.quantity, unit_price: item.book.on_sale && item.book.sale_price ? item.book.sale_price : item.book.price }));
+      const orderItems = items.map((item) => ({
+        order_id: order.id, book_id: item.book.id, quantity: item.quantity,
+        unit_price: item.book.on_sale && item.book.sale_price ? item.book.sale_price : item.book.price,
+      }));
       const { error: itemsErr } = await supabase.from("order_items").insert(orderItems as any);
       if (itemsErr) throw itemsErr;
 
-      for (const item of items) {
-        await supabase.from("books").update({ sales_count: (item.book.sales_count || 0) + item.quantity } as any).eq("id", item.book.id);
-      }
+      // Upload proof
+      const ext = proofFile.name.split(".").pop();
+      const path = `${user.id}/${order.id}-proof.${ext}`;
+      await supabase.storage.from("book-covers").upload(path, proofFile, { upsert: true });
 
       setConfirmed(true);
       clearCart();
@@ -58,8 +79,12 @@ const Checkout = () => {
       <div className="min-h-screen flex flex-col"><Header /><main className="flex-1 flex items-center justify-center px-4 py-16">
         <div className="text-center space-y-4 max-w-md">
           <CheckCircle className="h-20 w-20 text-accent mx-auto" />
-          <h1 className="text-3xl font-bold">{t("checkout.success")}</h1>
-          <p className="text-muted-foreground">{t("checkout.success.msg")}</p>
+          <h1 className="text-3xl font-bold">{lang === "fr" ? "Commande soumise !" : "Order Submitted!"}</h1>
+          <p className="text-muted-foreground">
+            {lang === "fr"
+              ? "Votre commande est en attente de vérification du paiement. Vous recevrez une confirmation une fois le paiement validé."
+              : "Your order is pending payment verification. You'll receive confirmation once payment is validated."}
+          </p>
           {wantsDelivery && <p className="text-sm text-accent font-medium">🚚 Kitabu Express {lang === "fr" ? "va traiter votre livraison." : "will handle your delivery."}</p>}
           <Button asChild className="rounded-full"><Link to="/">{t("cart.continue")}</Link></Button>
         </div>
@@ -76,48 +101,70 @@ const Checkout = () => {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           <div className="space-y-6">
-            <Card>
-              <CardHeader><CardTitle className="text-xl">{t("checkout.payment")}</CardTitle></CardHeader>
+            {/* Bank Transfer Instructions */}
+            <Card className="border-primary/20">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-xl">
+                  <CreditCard className="h-5 w-5 text-primary" />
+                  {lang === "fr" ? "Paiement par virement bancaire" : "Bank Transfer Payment"}
+                </CardTitle>
+              </CardHeader>
               <CardContent className="space-y-4">
-                <RadioGroup value={paymentMethod} onValueChange={setPaymentMethod} className="space-y-3">
-                  <Label htmlFor="pm-mobile" className={`flex items-center gap-4 rounded-xl border-2 p-4 cursor-pointer transition-all ${paymentMethod === "mobilemoney" ? "border-primary bg-primary/5" : "border-border"}`}>
-                    <RadioGroupItem value="mobilemoney" id="pm-mobile" />
-                    <Smartphone className="h-6 w-6 text-accent" />
-                    <div><p className="font-medium">{t("checkout.mobilemoney")}</p><p className="text-xs text-muted-foreground">M-Pesa, Orange Money, Airtel Money</p></div>
-                  </Label>
-                  <Label htmlFor="pm-card" className={`flex items-center gap-4 rounded-xl border-2 p-4 cursor-pointer transition-all ${paymentMethod === "card" ? "border-primary bg-primary/5" : "border-border"}`}>
-                    <RadioGroupItem value="card" id="pm-card" />
-                    <CreditCard className="h-6 w-6 text-primary" />
-                    <div><p className="font-medium">{t("checkout.card")}</p><p className="text-xs text-muted-foreground">Visa, Mastercard</p></div>
-                  </Label>
-                  <Label htmlFor="pm-bank" className={`flex items-center gap-4 rounded-xl border-2 p-4 cursor-pointer transition-all ${paymentMethod === "bank" ? "border-primary bg-primary/5" : "border-border"}`}>
-                    <RadioGroupItem value="bank" id="pm-bank" />
-                    <CreditCard className="h-6 w-6 text-muted-foreground" />
-                    <div><p className="font-medium">{lang === "fr" ? "Virement bancaire" : "Bank Transfer"}</p><p className="text-xs text-muted-foreground">IBAN, Swift</p></div>
-                  </Label>
-                </RadioGroup>
+                <div className="bg-primary/5 rounded-xl p-4 space-y-2">
+                  <h4 className="font-bold text-sm">{lang === "fr" ? "Coordonnées bancaires KitabuShop" : "KitabuShop Bank Details"}</h4>
+                  <div className="text-sm space-y-1.5">
+                    <p><span className="text-muted-foreground">{lang === "fr" ? "Banque :" : "Bank:"}</span> <strong>Rawbank</strong></p>
+                    <p><span className="text-muted-foreground">{lang === "fr" ? "Titulaire :" : "Holder:"}</span> <strong>KitabuShop SARL</strong></p>
+                    <p><span className="text-muted-foreground">{lang === "fr" ? "Numéro de compte :" : "Account:"}</span> <strong>05100-05101-01099918601-72</strong></p>
+                    <p><span className="text-muted-foreground">SWIFT :</span> <strong>RAWBCDKI</strong></p>
+                    <p><span className="text-muted-foreground">{lang === "fr" ? "Montant :" : "Amount:"}</span> <strong className="text-primary text-lg">${total.toFixed(2)} USD</strong></p>
+                    <p><span className="text-muted-foreground">{lang === "fr" ? "Référence :" : "Reference:"}</span> <strong>KS-{Date.now().toString(36).toUpperCase()}</strong></p>
+                  </div>
+                </div>
 
-                {paymentMethod === "mobilemoney" && (
-                  <div className="space-y-3 pt-2">
-                    <div className="space-y-2"><Label>{lang === "fr" ? "Numéro de téléphone" : "Phone Number"}</Label><Input placeholder="+243 XXX XXX XXX" className="rounded-lg" /></div>
+                <div className="flex items-start gap-2 p-3 bg-amber-500/10 rounded-lg">
+                  <AlertCircle className="h-4 w-4 text-amber-600 mt-0.5 shrink-0" />
+                  <p className="text-xs text-amber-700">
+                    {lang === "fr"
+                      ? "Effectuez le virement, puis joignez la capture d'écran de confirmation ci-dessous. Votre commande sera validée après vérification."
+                      : "Make the transfer, then attach the confirmation screenshot below. Your order will be validated after verification."}
+                  </p>
+                </div>
+
+                {/* Proof upload */}
+                <div className="space-y-2">
+                  <Label className="font-semibold">
+                    {lang === "fr" ? "Capture de confirmation du paiement *" : "Payment Confirmation Screenshot *"}
+                  </Label>
+                  <input ref={proofRef} type="file" accept="image/*" className="hidden" onChange={handleProofChange} />
+                  <div
+                    onClick={() => proofRef.current?.click()}
+                    className="border-2 border-dashed border-border rounded-xl p-6 text-center cursor-pointer hover:border-primary transition-colors"
+                  >
+                    {proofPreview ? (
+                      <img src={proofPreview} alt="Payment proof" className="max-h-48 rounded-lg mx-auto object-contain" />
+                    ) : (
+                      <div className="space-y-2">
+                        <ImageIcon className="h-10 w-10 mx-auto text-muted-foreground/40" />
+                        <p className="text-sm text-muted-foreground">
+                          {lang === "fr" ? "Cliquez pour joindre la capture" : "Click to attach screenshot"}
+                        </p>
+                      </div>
+                    )}
                   </div>
-                )}
-                {paymentMethod === "card" && (
-                  <div className="space-y-3 pt-2">
-                    <div className="space-y-2"><Label>{lang === "fr" ? "Numéro de carte" : "Card Number"}</Label><Input placeholder="4242 4242 4242 4242" className="rounded-lg" /></div>
-                    <div className="grid grid-cols-2 gap-3">
-                      <div className="space-y-2"><Label>Expiration</Label><Input placeholder="MM/YY" className="rounded-lg" /></div>
-                      <div className="space-y-2"><Label>CVC</Label><Input placeholder="123" className="rounded-lg" /></div>
-                    </div>
-                  </div>
-                )}
-                {paymentMethod === "bank" && (
-                  <div className="space-y-3 pt-2">
-                    <div className="space-y-2"><Label>IBAN</Label><Input placeholder="CD XX XXXX XXXX XXXX" className="rounded-lg" /></div>
-                    <div className="space-y-2"><Label>{lang === "fr" ? "Nom du titulaire" : "Account Holder"}</Label><Input className="rounded-lg" /></div>
-                    <p className="text-xs text-muted-foreground">{lang === "fr" ? "Les fonds seront débités sous 2-3 jours ouvrables." : "Funds will be debited within 2-3 business days."}</p>
-                  </div>
-                )}
+                  {proofFile && <p className="text-xs text-accent">✅ {proofFile.name}</p>}
+                </div>
+
+                {/* Optional note */}
+                <div className="space-y-2">
+                  <Label className="text-xs">{lang === "fr" ? "Note (optionnel)" : "Note (optional)"}</Label>
+                  <Textarea
+                    value={paymentNote}
+                    onChange={(e) => setPaymentNote(e.target.value)}
+                    placeholder={lang === "fr" ? "Informations complémentaires..." : "Additional information..."}
+                    className="min-h-[60px]"
+                  />
+                </div>
               </CardContent>
             </Card>
 
@@ -138,6 +185,7 @@ const Checkout = () => {
             )}
           </div>
 
+          {/* Summary */}
           <Card>
             <CardHeader><CardTitle className="text-xl">{lang === "fr" ? "Résumé" : "Summary"}</CardTitle></CardHeader>
             <CardContent className="space-y-4">
@@ -161,10 +209,15 @@ const Checkout = () => {
                 <span>Total</span>
                 <span className="text-primary tabular-nums">${total.toFixed(2)}</span>
               </div>
-              <Button size="lg" className="w-full rounded-full" onClick={handleConfirm} disabled={processing}>
+              <Button size="lg" className="w-full rounded-full" onClick={handleConfirm} disabled={processing || !proofFile}>
                 {processing ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-                {t("checkout.confirm")}
+                {lang === "fr" ? "Soumettre la commande" : "Submit Order"}
               </Button>
+              {!proofFile && (
+                <p className="text-xs text-center text-muted-foreground">
+                  {lang === "fr" ? "⚠️ La capture de paiement est requise" : "⚠️ Payment screenshot is required"}
+                </p>
+              )}
             </CardContent>
           </Card>
         </div>
