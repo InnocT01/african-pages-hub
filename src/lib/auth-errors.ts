@@ -1,6 +1,6 @@
 type AuthErrorLike = { message?: string; status?: string | number };
 
-type Lang = "fr" | "en";
+type Lang = "fr" | "en" | "sw" | "ln";
 
 const messages = {
   fr: {
