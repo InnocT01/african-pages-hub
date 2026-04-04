@@ -75,13 +75,22 @@ const Header = () => {
             {/* Right actions */}
             <div className="flex items-center gap-1 ml-auto">
               {/* Language */}
-              <button
-                onClick={() => setLang(lang === "fr" ? "en" : "fr")}
-                className="hidden sm:flex items-center gap-1.5 px-3 py-2 text-xs font-medium rounded-xl hover:bg-secondary transition-colors"
-              >
-                <Globe className="h-3.5 w-3.5 text-muted-foreground" />
-                <span>{lang === "fr" ? "FR" : "EN"}</span>
-              </button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button className="hidden sm:flex items-center gap-1.5 px-3 py-2 text-xs font-medium rounded-xl hover:bg-secondary transition-colors">
+                    <Globe className="h-3.5 w-3.5 text-muted-foreground" />
+                    <span>{lang.toUpperCase()}</span>
+                    <ChevronDown className="h-3 w-3 text-muted-foreground" />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="rounded-xl">
+                  {([["fr","Français"],["en","English"],["sw","Kiswahili"],["ln","Lingála"]] as const).map(([code, label]) => (
+                    <DropdownMenuItem key={code} onClick={() => setLang(code as any)} className={`rounded-lg ${lang === code ? "bg-primary/10 text-primary font-semibold" : ""}`}>
+                      {label}
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
 
               {/* Currency */}
               <DropdownMenu>
