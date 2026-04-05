@@ -9,10 +9,10 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
-import { CreditCard, CheckCircle, ArrowLeft, Loader2, Truck, Upload, ImageIcon, AlertCircle } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { CreditCard, CheckCircle, ArrowLeft, Loader2, Truck, ImageIcon, AlertCircle, Shield, XCircle, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 
 const Checkout = () => {
@@ -25,18 +25,40 @@ const Checkout = () => {
   const [proofFile, setProofFile] = useState<File | null>(null);
   const [proofPreview, setProofPreview] = useState<string | null>(null);
   const [paymentNote, setPaymentNote] = useState("");
+  const [verifying, setVerifying] = useState(false);
+  const [verificationResult, setVerificationResult] = useState<any>(null);
   const proofRef = useRef<HTMLInputElement>(null);
 
   const hasPhysicalItems = items.some(i => i.book.format === "paperback" || i.book.format === "both");
 
-  const handleProofChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleProofChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      setProofFile(file);
-      const reader = new FileReader();
-      reader.onload = (ev) => setProofPreview(ev.target?.result as string);
-      reader.readAsDataURL(file);
-    }
+    if (!file) return;
+    setProofFile(file);
+    setVerificationResult(null);
+    
+    const reader = new FileReader();
+    reader.onload = async (ev) => {
+      const base64 = ev.target?.result as string;
+      setProofPreview(base64);
+      
+      // Auto-verify with AI
+      setVerifying(true);
+      try {
+        const { data, error } = await supabase.functions.invoke("verify-payment", {
+          body: { imageBase64: base64, expectedAmount: total.toFixed(2), currency: "USD" },
+        });
+        if (error) throw error;
+        setVerificationResult(data);
+      } catch (err: any) {
+        console.error("Verification error:", err);
+        // Don't block - allow manual submission
+        setVerificationResult({ valid: null, verdict: "⚠️ Vérification indisponible", summary: lang === "fr" ? "La vérification automatique n'a pas pu être effectuée. Votre preuve sera vérifiée manuellement." : "Auto-verification unavailable. Your proof will be verified manually.", confidence: 0 });
+      } finally {
+        setVerifying(false);
+      }
+    };
+    reader.readAsDataURL(file);
   };
 
   const handleConfirm = async () => {
@@ -45,6 +67,13 @@ const Checkout = () => {
       toast.error(lang === "fr" ? "Veuillez joindre la capture de confirmation de paiement" : "Please attach the payment confirmation screenshot");
       return;
     }
+    
+    // Block if AI detected fraud
+    if (verificationResult?.valid === false && verificationResult?.confidence >= 80) {
+      toast.error(lang === "fr" ? "La preuve de paiement semble invalide. Veuillez fournir une preuve authentique." : "Payment proof appears invalid. Please provide authentic proof.");
+      return;
+    }
+
     setProcessing(true);
     try {
       const { data: order, error: orderErr } = await supabase
@@ -126,14 +155,15 @@ const Checkout = () => {
                   <AlertCircle className="h-4 w-4 text-amber-600 mt-0.5 shrink-0" />
                   <p className="text-xs text-amber-700">
                     {lang === "fr"
-                      ? "Effectuez le virement, puis joignez la capture d'écran de confirmation ci-dessous. Votre commande sera validée après vérification."
-                      : "Make the transfer, then attach the confirmation screenshot below. Your order will be validated after verification."}
+                      ? "Effectuez le virement, puis joignez la capture d'écran ci-dessous. Notre IA vérifiera automatiquement l'authenticité."
+                      : "Make the transfer, then attach the screenshot below. Our AI will automatically verify authenticity."}
                   </p>
                 </div>
 
                 {/* Proof upload */}
                 <div className="space-y-2">
-                  <Label className="font-semibold">
+                  <Label className="font-semibold flex items-center gap-2">
+                    <Shield className="h-4 w-4 text-primary" />
                     {lang === "fr" ? "Capture de confirmation du paiement *" : "Payment Confirmation Screenshot *"}
                   </Label>
                   <input ref={proofRef} type="file" accept="image/*" className="hidden" onChange={handleProofChange} />
@@ -154,6 +184,57 @@ const Checkout = () => {
                   </div>
                   {proofFile && <p className="text-xs text-accent">✅ {proofFile.name}</p>}
                 </div>
+
+                {/* AI Verification Result */}
+                {verifying && (
+                  <div className="flex items-center gap-3 p-4 rounded-xl bg-primary/5 border border-primary/10">
+                    <Loader2 className="h-5 w-5 animate-spin text-primary" />
+                    <div>
+                      <p className="text-sm font-medium">{lang === "fr" ? "Vérification IA en cours..." : "AI verification in progress..."}</p>
+                      <p className="text-xs text-muted-foreground">{lang === "fr" ? "Analyse de l'authenticité de la preuve de paiement" : "Analyzing payment proof authenticity"}</p>
+                    </div>
+                  </div>
+                )}
+
+                {verificationResult && !verifying && (
+                  <div className={`p-4 rounded-xl border space-y-2 ${
+                    verificationResult.valid === true ? "bg-accent/5 border-accent/20" :
+                    verificationResult.valid === false ? "bg-destructive/5 border-destructive/20" :
+                    "bg-amber-500/5 border-amber-500/20"
+                  }`}>
+                    <div className="flex items-center gap-3">
+                      {verificationResult.valid === true ? (
+                        <CheckCircle className="h-6 w-6 text-accent shrink-0" />
+                      ) : verificationResult.valid === false ? (
+                        <XCircle className="h-6 w-6 text-destructive shrink-0" />
+                      ) : (
+                        <AlertTriangle className="h-6 w-6 text-amber-500 shrink-0" />
+                      )}
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          <p className="font-bold text-sm">{verificationResult.verdict}</p>
+                          {verificationResult.confidence > 0 && (
+                            <Badge variant="secondary" className="text-[10px]">{verificationResult.confidence}%</Badge>
+                          )}
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-0.5">{verificationResult.summary}</p>
+                      </div>
+                    </div>
+                    {verificationResult.amount_detected && (
+                      <p className="text-xs"><span className="text-muted-foreground">{lang === "fr" ? "Montant détecté :" : "Amount detected:"}</span> <strong>{verificationResult.amount_detected}</strong></p>
+                    )}
+                    {verificationResult.bank_detected && (
+                      <p className="text-xs"><span className="text-muted-foreground">{lang === "fr" ? "Banque détectée :" : "Bank detected:"}</span> <strong>{verificationResult.bank_detected}</strong></p>
+                    )}
+                    {verificationResult.issues?.length > 0 && (
+                      <div className="text-xs space-y-0.5">
+                        {verificationResult.issues.map((issue: string, i: number) => (
+                          <p key={i} className="text-muted-foreground">⚠️ {issue}</p>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
 
                 {/* Optional note */}
                 <div className="space-y-2">
@@ -209,13 +290,20 @@ const Checkout = () => {
                 <span>Total</span>
                 <span className="text-primary tabular-nums">${total.toFixed(2)}</span>
               </div>
-              <Button size="lg" className="w-full rounded-full" onClick={handleConfirm} disabled={processing || !proofFile}>
+              <Button size="lg" className="w-full rounded-full" onClick={handleConfirm}
+                disabled={processing || !proofFile || (verificationResult?.valid === false && verificationResult?.confidence >= 80)}
+              >
                 {processing ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
                 {lang === "fr" ? "Soumettre la commande" : "Submit Order"}
               </Button>
               {!proofFile && (
                 <p className="text-xs text-center text-muted-foreground">
                   {lang === "fr" ? "⚠️ La capture de paiement est requise" : "⚠️ Payment screenshot is required"}
+                </p>
+              )}
+              {verificationResult?.valid === false && verificationResult?.confidence >= 80 && (
+                <p className="text-xs text-center text-destructive">
+                  {lang === "fr" ? "❌ La preuve de paiement semble invalide" : "❌ Payment proof appears invalid"}
                 </p>
               )}
             </CardContent>
