@@ -26,34 +26,45 @@ serve(async (req) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
+        model: "google/gemini-2.5-pro",
         messages: [
           {
             role: "system",
-            content: `You are an advanced plagiarism detection system for an African publishing platform. Perform a thorough analysis of the submitted text using multiple detection methods:
+            content: `You are the most advanced plagiarism detection system for KitabuShop, an African publishing platform. Perform an exhaustive multi-layered analysis using these methods:
 
-1. **Stylometric Analysis**: Analyze writing style consistency (vocabulary richness, sentence complexity, transitions). Flag sudden style changes.
-2. **Pattern Detection**: Check for well-known phrases, clichés, or passages commonly found in published works.
-3. **Structural Analysis**: Evaluate if the text structure follows original thought patterns or appears to be assembled from multiple sources.
-4. **Language Quality**: Check for inconsistencies in language register, tone, or regional variations that suggest copy-paste from different sources.
-5. **Content Originality**: Assess the uniqueness of ideas and arguments.
+1. **Stylometric Fingerprinting**: Analyze vocabulary richness (TTR, hapax legomena), sentence length distribution, punctuation patterns, paragraph structure. Flag any sudden stylistic shifts that suggest different authors.
 
-Respond in JSON format with this exact structure:
+2. **N-gram & Phrase Detection**: Check for common phrases, clichés, or verbatim passages frequently found in published African and world literature. Identify any sequences of 5+ words that appear formulaic or copied.
+
+3. **Structural Coherence Analysis**: Evaluate logical flow, argument progression, narrative consistency. Assembled texts from multiple sources often show topic jumps, inconsistent arguments, or disjointed paragraphs.
+
+4. **Linguistic Consistency Check**: Analyze language register, regional expressions, spelling conventions (British vs American English, formal vs informal French), idiomatic usage. Mixed registers suggest copy-paste from different sources.
+
+5. **Content Originality Assessment**: Evaluate the uniqueness of ideas, metaphors, examples, and arguments. Generic or widely-known content scores lower.
+
+6. **AI-Generated Text Detection**: Check for hallmarks of AI-generated text: unnaturally perfect grammar, repetitive sentence structures, lack of personal voice, generic examples, absence of cultural specificity.
+
+7. **Cross-Reference Check**: Identify any passages that closely resemble well-known works, Wikipedia articles, academic papers, or commonly plagiarized sources in African literature.
+
+Respond ONLY with valid JSON (no markdown, no code blocks):
 {
-  "score": <number 0-100 where 0=likely plagiarized, 100=likely original>,
-  "verdict": "<✅ Original | ⚠️ Suspicious | ❌ Likely Plagiarized>",
-  "summary": "<2-3 sentence overall assessment>",
+  "score": <number 0-100, where 0=definitely plagiarized, 100=highly original>,
+  "verdict": "<one of: ✅ Original | ⚠️ Suspicious | ❌ Likely Plagiarized>",
+  "summary": "<2-3 sentence assessment explaining the key findings>",
   "details": [
-    {"check": "<check name>", "status": "<pass|warning|fail>", "note": "<brief explanation>"}
+    {"check": "<check name>", "status": "<pass|warning|fail>", "note": "<specific finding with evidence>", "weight": <importance 1-10>}
   ],
-  "suggestions": ["<improvement suggestion 1>", "<improvement suggestion 2>"]
+  "suggestions": ["<specific actionable improvement>"],
+  "risk_factors": ["<specific concern>"],
+  "confidence": <number 0-100 indicating how confident you are in this analysis>
 }
 
-Respond in the same language as the analyzed text (French or English).`,
+Be thorough but fair. African authors often use oral tradition patterns, proverbs, and cultural references that should NOT be flagged as plagiarism.
+Respond in the same language as the analyzed text.`,
           },
           {
             role: "user",
-            content: `Title: "${title || "Untitled"}"\n\nText to analyze (${text.length} characters):\n${text.slice(0, 3000)}`,
+            content: `Title: "${title || "Untitled"}"\n\nFull text to analyze (${text.length} characters):\n${text.slice(0, 5000)}`,
           },
         ],
         stream: false,
@@ -79,7 +90,6 @@ Respond in the same language as the analyzed text (French or English).`,
     const data = await response.json();
     const rawContent = data.choices?.[0]?.message?.content || "";
     
-    // Try to parse as JSON
     let parsed;
     try {
       const jsonMatch = rawContent.match(/\{[\s\S]*\}/);
@@ -94,8 +104,7 @@ Respond in the same language as the analyzed text (French or English).`,
       });
     }
 
-    // Fallback
-    return new Response(JSON.stringify({ result: rawContent, score: 50, details: [] }), {
+    return new Response(JSON.stringify({ result: rawContent, score: 50, details: [], confidence: 0 }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (e) {
