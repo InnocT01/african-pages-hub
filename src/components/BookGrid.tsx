@@ -54,31 +54,31 @@ const BookGrid = ({ title, books, categoryLink, loading, horizontal = true, view
       </div>
 
       {loading ? (
-        <div className="flex gap-4 overflow-hidden">
+        <div className="flex gap-8 overflow-hidden">
           {[...Array(6)].map((_, i) => (
-            <div key={i} className="shrink-0 w-[140px] space-y-3">
-              <Skeleton className="aspect-[2/3] rounded-2xl" />
-              <Skeleton className="h-3 w-3/4 rounded-lg" />
-              <Skeleton className="h-2.5 w-1/2 rounded-lg" />
+            <div key={i} className="shrink-0 w-[160px] space-y-4">
+              <Skeleton className="aspect-[3/4.5] rounded-none" />
+              <Skeleton className="h-3 w-3/4 rounded-none" />
+              <Skeleton className="h-2.5 w-1/2 rounded-none" />
             </div>
           ))}
         </div>
       ) : horizontal ? (
-        <div ref={scrollRef} className="flex gap-4 overflow-x-auto scrollbar-hide pb-2 snap-x snap-mandatory">
+        <div ref={scrollRef} className="flex gap-8 overflow-x-auto scrollbar-hide pb-4 snap-x snap-mandatory -mx-1 px-1">
           {books.map((book) => (
-            <div key={book.id} className="snap-start shrink-0 w-[140px] sm:w-[160px]">
+            <div key={book.id} className="snap-start shrink-0 w-[160px] sm:w-[180px] lg:w-[200px]">
               <BookCard book={book} />
             </div>
           ))}
         </div>
       ) : viewMode === "list" ? (
-        <div className="divide-y divide-border/50">
+        <div className="divide-y divide-border">
           {books.map((book) => (
             <BookCard key={book.id} book={book} viewMode="list" />
           ))}
         </div>
       ) : (
-        <div className="grid grid-cols-2 gap-5 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
+        <div className="grid grid-cols-2 gap-x-6 gap-y-10 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
           {books.map((book) => (
             <BookCard key={book.id} book={book} />
           ))}
