@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { PenTool, ArrowRight, BookOpen, TrendingUp, Shield, Globe, Sparkles, Zap } from "lucide-react";
+import { ArrowRight, TrendingUp, Shield, Globe, Zap, Sparkles, BookOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/contexts/LanguageContext";
 
@@ -7,53 +7,57 @@ const CreatorCTA = () => {
   const { t, lang } = useLanguage();
 
   const features = [
-    { icon: Zap, label: lang === "fr" ? "Publication en 3 min" : "Publish in 3 min" },
-    { icon: TrendingUp, label: lang === "fr" ? "Analytiques en temps réel" : "Real-time Analytics" },
-    { icon: Shield, label: lang === "fr" ? "Anti-plagiat IA" : "AI Plagiarism Check" },
-    { icon: Globe, label: lang === "fr" ? "Multi-devises & langues" : "Multi-currency & Languages" },
+    { icon: Zap, label: lang === "fr" ? "Vitesse Éclair" : "Lightning Speed", desc: lang === "fr" ? "Publication en moins de 5 minutes sur notre réseau mondial." : "Publish in under 5 minutes to our global network." },
+    { icon: Shield, label: lang === "fr" ? "Protection IA" : "AI Protection", desc: lang === "fr" ? "Algorithmes avancés pour protéger vos droits et contrer le plagiat." : "Advanced algorithms protect your rights and detect plagiarism." },
+    { icon: TrendingUp, label: lang === "fr" ? "Tableau de bord" : "Live Dashboard", desc: lang === "fr" ? "Suivez vos ventes et l'engagement de vos lecteurs en temps réel." : "Track sales and reader engagement in real time." },
+    { icon: Globe, label: lang === "fr" ? "Multi-langues" : "Multi-language", desc: lang === "fr" ? "Publiez en Français, Anglais, Swahili, Lingala et plus encore." : "Publish in French, English, Swahili, Lingala and more." },
   ];
 
   return (
-    <section className="rounded-3xl overflow-hidden relative">
-      <div className="absolute inset-0 bg-gradient-to-br from-foreground via-foreground/95 to-foreground/90" />
-      <div className="absolute inset-0 kente-pattern opacity-20" />
-      <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-primary via-gold to-accent" />
-      
-      <div className="relative z-10 p-8 md:p-12">
-        <div className="flex flex-col md:flex-row items-center gap-10">
-          <div className="flex-1 space-y-5">
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/20 backdrop-blur-sm">
-              <Sparkles className="h-3.5 w-3.5 text-gold" />
-              <span className="text-xs font-bold uppercase tracking-wider text-gold">Kitabu Direct Publishing</span>
-            </div>
-            
-            <h2 className="text-3xl md:text-4xl font-extrabold text-background leading-tight font-display">
-              {lang === "fr" 
-                ? "Publiez. Partagez. Inspirez."
-                : "Publish. Share. Inspire."}
-            </h2>
-            
-            <p className="text-sm text-background/50 max-w-lg leading-relaxed">
-              {t("cta.creator.subtitle")}
-            </p>
-            
-            <div className="flex gap-3 pt-2">
-              <Button size="lg" asChild className="rounded-2xl gap-2 font-bold bg-primary hover:bg-primary/90 shadow-glow">
-                <Link to="/signup">{t("cta.creator.button")}<ArrowRight className="h-4 w-4" /></Link>
-              </Button>
-              <Button size="lg" asChild variant="outline" className="rounded-2xl border-background/20 text-background hover:bg-background/10 hover:text-background">
-                <Link to="/about">{lang === "fr" ? "En savoir plus" : "Learn More"}</Link>
-              </Button>
-            </div>
+    <section className="relative bg-foreground text-background overflow-hidden">
+      {/* Subtle paper texture */}
+      <div className="absolute inset-0 paper-texture opacity-30 pointer-events-none" />
+
+      <div className="relative z-10 grid lg:grid-cols-2">
+        {/* Left — CTA */}
+        <div className="p-10 md:p-16 lg:p-20 space-y-8">
+          <div className="inline-flex items-center gap-2 bg-accent px-4 py-1.5 text-[10px] font-black tracking-[0.25em] uppercase text-foreground">
+            <Sparkles className="h-3 w-3" />
+            Kitabu Direct Publishing
           </div>
-          
-          <div className="hidden md:grid grid-cols-2 gap-3 w-[360px] shrink-0">
+
+          <h2 className="font-display text-5xl md:text-6xl leading-[1.05] text-background font-medium">
+            {lang === "fr" ? (
+              <>Publiez. Partagez. <br /><span className="italic text-accent">Inspirez le monde.</span></>
+            ) : (
+              <>Publish. Share. <br /><span className="italic text-accent">Inspire the world.</span></>
+            )}
+          </h2>
+
+          <p className="text-background/60 max-w-md leading-relaxed font-light text-base">
+            {t("cta.creator.subtitle")}
+          </p>
+
+          <div className="flex flex-wrap gap-4 pt-2">
+            <Button asChild size="lg" className="rounded-none px-10 h-12 text-xs uppercase tracking-[0.2em] font-bold bg-accent text-foreground hover:bg-background hover:text-foreground transition-all hover:-translate-y-0.5">
+              <Link to="/signup">{t("cta.creator.button")}<ArrowRight className="h-4 w-4 ml-2" /></Link>
+            </Button>
+            <Button asChild size="lg" variant="outline" className="rounded-none px-10 h-12 text-xs uppercase tracking-[0.2em] font-bold border-background/30 text-background hover:bg-background/5 hover:text-background bg-transparent">
+              <Link to="/about">{lang === "fr" ? "Comment ça marche ?" : "How does it work?"}</Link>
+            </Button>
+          </div>
+        </div>
+
+        {/* Right — feature grid */}
+        <div className="bg-background/[0.03] backdrop-blur-sm p-10 md:p-16 lg:p-20 border-l border-background/10">
+          <div className="grid sm:grid-cols-2 gap-x-8 gap-y-10">
             {features.map((f, i) => (
-              <div key={i} className="flex items-center gap-3 bg-background/5 backdrop-blur-sm rounded-2xl p-4 border border-background/10 hover:bg-background/10 transition-colors">
-                <div className="h-9 w-9 rounded-xl bg-primary/20 flex items-center justify-center shrink-0">
-                  <f.icon className="h-4 w-4 text-gold" />
+              <div key={i} className="space-y-4">
+                <div className="w-12 h-12 bg-accent/10 border border-accent/30 flex items-center justify-center">
+                  <f.icon className="w-5 h-5 text-accent" />
                 </div>
-                <span className="text-xs text-background/70 font-medium leading-tight">{f.label}</span>
+                <h4 className="font-display text-2xl text-background leading-tight">{f.label}</h4>
+                <p className="text-sm text-background/55 leading-relaxed">{f.desc}</p>
               </div>
             ))}
           </div>
