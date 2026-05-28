@@ -14,9 +14,10 @@ export default {
     },
     extend: {
       fontFamily: {
-        sans: ["Space Grotesk", "Inter", "system-ui", "sans-serif"],
-        display: ["Playfair Display", "serif"],
-        grotesk: ["Space Grotesk", "system-ui", "sans-serif"],
+        sans: ["Karla", "system-ui", "sans-serif"],
+        display: ["Cormorant Garamond", "serif"],
+        serif: ["Cormorant Garamond", "serif"],
+        body: ["Karla", "system-ui", "sans-serif"],
       },
       colors: {
         border: "hsl(var(--border))",

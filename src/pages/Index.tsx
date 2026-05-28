@@ -70,8 +70,8 @@ const Index = () => {
       <Header />
       <HeroSection />
       <main className="flex-1">
-        <div className="container mx-auto px-4 py-6">
-          <div className="flex gap-6">
+        <div className="container mx-auto px-4 lg:px-8 py-16">
+          <div className="flex gap-10">
             {/* Left sidebar filters */}
             <div className="hidden lg:block w-56 shrink-0">
               <FilterBar
@@ -84,16 +84,15 @@ const Index = () => {
               />
             </div>
 
-            {/* Main content */}
-            <div className="flex-1 min-w-0 space-y-8">
+            <div className="flex-1 min-w-0 space-y-20">
               {hasFilters && (
-                <div className="flex items-center justify-between pb-3 border-b border-border">
-                  <p className="text-sm text-muted-foreground">
+                <div className="flex items-center justify-between pb-4 border-b border-border">
+                  <p className="text-sm text-muted-foreground italic font-display">
                     {sortedBooks.length} {lang === "fr" ? "résultats" : "results"}
                   </p>
                   <div className="flex items-center gap-2">
                     <Select value={sortBy} onValueChange={setSortBy}>
-                      <SelectTrigger className="h-8 w-40 text-xs rounded-lg">
+                      <SelectTrigger className="h-9 w-44 text-xs rounded-none">
                         <SelectValue placeholder={lang === "fr" ? "Trier par" : "Sort by"} />
                       </SelectTrigger>
                       <SelectContent>
@@ -105,9 +104,9 @@ const Index = () => {
                         <SelectItem value="sales">Best Sellers</SelectItem>
                       </SelectContent>
                     </Select>
-                    <div className="flex border border-border rounded-lg overflow-hidden">
-                      <button onClick={() => setViewMode("grid")} className={`p-1.5 ${viewMode === "grid" ? "bg-secondary" : ""}`}><LayoutGrid className="h-3.5 w-3.5" /></button>
-                      <button onClick={() => setViewMode("list")} className={`p-1.5 ${viewMode === "list" ? "bg-secondary" : ""}`}><List className="h-3.5 w-3.5" /></button>
+                    <div className="flex border border-border overflow-hidden">
+                      <button onClick={() => setViewMode("grid")} aria-label="Grid view" className={`p-2 ${viewMode === "grid" ? "bg-secondary" : ""}`}><LayoutGrid className="h-3.5 w-3.5" /></button>
+                      <button onClick={() => setViewMode("list")} aria-label="List view" className={`p-2 ${viewMode === "list" ? "bg-secondary" : ""}`}><List className="h-3.5 w-3.5" /></button>
                     </div>
                   </div>
                 </div>
@@ -117,12 +116,12 @@ const Index = () => {
                 <BookGrid title={lang === "fr" ? "Résultats" : "Results"} books={sortedBooks} loading={loadingAll} horizontal={false} viewMode={viewMode} />
               ) : (
                 <>
-                  <BookGrid title={`🔥 ${t("section.bestsellers")}`} books={bestsellers} categoryLink="/catalog?sort=sales" loading={loadingBest} />
-                  <BookGrid title={`⭐ ${lang === "fr" ? "Coups de cœur" : "Editor's Picks"}`} books={topRated} categoryLink="/catalog?sort=rating" />
-                  <BookGrid title={`🆕 ${t("section.new")}`} books={newReleases} categoryLink="/catalog?sort=new" loading={loadingNew} />
+                  <BookGrid title={t("section.bestsellers")} books={bestsellers} categoryLink="/catalog?sort=sales" loading={loadingBest} />
+                  <BookGrid title={lang === "fr" ? "Coups de cœur" : "Editor's Picks"} books={topRated} categoryLink="/catalog?sort=rating" />
+                  <BookGrid title={t("section.new")} books={newReleases} categoryLink="/catalog?sort=new" loading={loadingNew} />
 
                   {recentlyViewed.length > 0 && (
-                    <BookGrid title={`🕐 ${lang === "fr" ? "Consultés récemment" : "Recently Viewed"}`} books={recentlyViewed} />
+                    <BookGrid title={lang === "fr" ? "Consultés récemment" : "Recently Viewed"} books={recentlyViewed} />
                   )}
 
                   <CreatorCTA />
@@ -136,6 +135,7 @@ const Index = () => {
             </div>
           </div>
         </div>
+
       </main>
       <Footer />
     </div>
