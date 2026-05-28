@@ -28,27 +28,31 @@ const BookGrid = ({ title, books, categoryLink, loading, horizontal = true, view
   };
 
   return (
-    <section className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h2 className="text-xl font-extrabold tracking-tight">{title}</h2>
-        <div className="flex items-center gap-2">
+    <section className="space-y-8">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-4 border-b border-border">
+        <div className="space-y-3">
+          <h2 className="font-display text-3xl md:text-4xl font-medium tracking-tight text-foreground">{title}</h2>
+          <div className="editorial-rule" />
+        </div>
+        <div className="flex items-center gap-3">
           {horizontal && books.length > 4 && (
             <div className="hidden md:flex gap-1">
-              <button onClick={() => scroll("left")} className="h-8 w-8 rounded-xl flex items-center justify-center border border-border hover:bg-secondary transition-colors">
+              <button onClick={() => scroll("left")} aria-label="Scroll left" className="h-9 w-9 rounded-none flex items-center justify-center border border-border hover:bg-secondary transition-colors">
                 <ChevronLeft className="h-4 w-4" />
               </button>
-              <button onClick={() => scroll("right")} className="h-8 w-8 rounded-xl flex items-center justify-center border border-border hover:bg-secondary transition-colors">
+              <button onClick={() => scroll("right")} aria-label="Scroll right" className="h-9 w-9 rounded-none flex items-center justify-center border border-border hover:bg-secondary transition-colors">
                 <ChevronRight className="h-4 w-4" />
               </button>
             </div>
           )}
           {categoryLink && (
-            <Button variant="ghost" size="sm" asChild className="gap-1.5 text-primary font-semibold text-xs rounded-xl hover:bg-primary/10">
-              <Link to={categoryLink}>{t("section.viewall")}<ArrowRight className="h-3 w-3" /></Link>
+            <Button variant="ghost" size="sm" asChild className="gap-2 text-primary font-bold text-[11px] uppercase tracking-[0.2em] rounded-none hover:bg-transparent hover:text-foreground group">
+              <Link to={categoryLink}>{t("section.viewall")}<ArrowRight className="h-3 w-3 group-hover:translate-x-1 transition-transform" /></Link>
             </Button>
           )}
         </div>
       </div>
+
       {loading ? (
         <div className="flex gap-4 overflow-hidden">
           {[...Array(6)].map((_, i) => (
