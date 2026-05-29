@@ -15,6 +15,7 @@ const Header = () => {
   const { currency, setCurrency } = useCurrency();
   const { itemCount } = useCart();
   const { user, isAuthenticated, logout } = useAuth();
+  const { theme, toggleTheme } = useTheme();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchFocused, setSearchFocused] = useState(false);
