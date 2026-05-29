@@ -8,6 +8,7 @@ import { useCart } from "@/contexts/CartContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import NotificationBell from "@/components/NotificationBell";
+import SearchAutocomplete from "@/components/SearchAutocomplete";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 
 const Header = () => {
@@ -50,22 +51,8 @@ const Header = () => {
               <span className="font-display text-3xl font-light text-foreground tracking-tight">Shop</span>
             </Link>
 
-            {/* Search */}
-            <form onSubmit={handleSearch} className="hidden md:flex flex-1 max-w-lg mx-4">
-              <div className={`flex w-full items-center bg-secondary/60 px-5 h-11 transition-all ${searchFocused ? "ring-1 ring-primary bg-secondary" : ""}`}>
-                <input
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  onFocus={() => setSearchFocused(true)}
-                  onBlur={() => setSearchFocused(false)}
-                  placeholder={lang === "fr" ? "Rechercher un chef-d'œuvre…" : "Search a masterpiece…"}
-                  className="flex-1 h-full text-sm bg-transparent outline-none placeholder:text-muted-foreground/60 font-body"
-                />
-                <button type="submit" aria-label="Search" className="text-muted-foreground hover:text-primary transition-colors">
-                  <Search className="h-4 w-4" />
-                </button>
-              </div>
-            </form>
+            {/* Search with live autocomplete */}
+            <SearchAutocomplete />
 
             {/* Right actions */}
             <div className="flex items-center gap-2 ml-auto">
