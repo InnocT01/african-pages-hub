@@ -12,8 +12,9 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { CreditCard, CheckCircle, ArrowLeft, Loader2, Truck, ImageIcon, AlertCircle, Shield, XCircle, AlertTriangle } from "lucide-react";
+import { CreditCard, CheckCircle, ArrowLeft, Loader2, Truck, ImageIcon, AlertCircle, Shield, XCircle, AlertTriangle, Tag, Award } from "lucide-react";
 import { toast } from "sonner";
+import { useKitabuPoints } from "@/hooks/useKitabuPoints";
 
 const Checkout = () => {
   const { t, lang } = useLanguage();
@@ -28,8 +29,44 @@ const Checkout = () => {
   const [verifying, setVerifying] = useState(false);
   const [verificationResult, setVerificationResult] = useState<any>(null);
   const proofRef = useRef<HTMLInputElement>(null);
+  const { data: pointsData } = useKitabuPoints();
+
+  // Coupon state
+  const [couponInput, setCouponInput] = useState("");
+  const [appliedCoupon, setAppliedCoupon] = useState<{ code: string; discount_percent: number } | null>(null);
+  const [applyingCoupon, setApplyingCoupon] = useState(false);
+
+  // Points redemption: 100 points = 1 USD
+  const [usePoints, setUsePoints] = useState(false);
+  const availablePoints = pointsData?.balance || 0;
+  const maxPointsValue = Math.floor(availablePoints / 100);
+
+  const subtotal = total;
+  const couponDiscount = appliedCoupon ? (subtotal * appliedCoupon.discount_percent) / 100 : 0;
+  const afterCoupon = Math.max(0, subtotal - couponDiscount);
+  const pointsValue = usePoints ? Math.min(maxPointsValue, afterCoupon) : 0;
+  const pointsUsed = pointsValue * 100;
+  const finalTotal = Math.max(0, afterCoupon - pointsValue);
+  const pointsEarned = Math.floor(finalTotal);
 
   const hasPhysicalItems = items.some(i => i.book.format === "paperback" || i.book.format === "both");
+
+  const applyCoupon = async () => {
+    if (!couponInput.trim()) return;
+    setApplyingCoupon(true);
+    const { data, error } = await supabase
+      .from("coupons")
+      .select("code,discount_percent,active,expires_at,max_uses,uses_count")
+      .eq("code", couponInput.trim().toUpperCase())
+      .eq("active", true)
+      .maybeSingle();
+    setApplyingCoupon(false);
+    if (error || !data) { toast.error(lang === "fr" ? "Coupon invalide" : "Invalid coupon"); return; }
+    if (data.expires_at && new Date(data.expires_at) < new Date()) { toast.error(lang === "fr" ? "Coupon expiré" : "Coupon expired"); return; }
+    if (data.max_uses && data.uses_count >= data.max_uses) { toast.error(lang === "fr" ? "Coupon épuisé" : "Coupon limit reached"); return; }
+    setAppliedCoupon({ code: data.code, discount_percent: data.discount_percent });
+    toast.success(lang === "fr" ? `-${data.discount_percent}% appliqué !` : `-${data.discount_percent}% applied!`);
+  };
 
   const handleProofChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -46,7 +83,7 @@ const Checkout = () => {
       setVerifying(true);
       try {
         const { data, error } = await supabase.functions.invoke("verify-payment", {
-          body: { imageBase64: base64, expectedAmount: total.toFixed(2), currency: "USD" },
+          body: { imageBase64: base64, expectedAmount: finalTotal.toFixed(2), currency: "USD" },
         });
         if (error) throw error;
         setVerificationResult(data);
@@ -78,7 +115,16 @@ const Checkout = () => {
     try {
       const { data: order, error: orderErr } = await supabase
         .from("orders")
-        .insert({ user_id: user.id, total, payment_method: "bank_transfer", status: "pending_verification", currency: "USD" } as any)
+        .insert({
+          user_id: user.id,
+          total: finalTotal,
+          payment_method: "bank_transfer",
+          status: "pending_verification",
+          currency: "USD",
+          coupon_code: appliedCoupon?.code || null,
+          points_used: pointsUsed,
+          points_earned: pointsEarned,
+        } as any)
         .select().single();
       if (orderErr) throw orderErr;
 
@@ -93,6 +139,25 @@ const Checkout = () => {
       const ext = proofFile.name.split(".").pop();
       const path = `${user.id}/${order.id}-proof.${ext}`;
       await supabase.storage.from("book-covers").upload(path, proofFile, { upsert: true });
+
+      // Update Kitabu Points
+      if (pointsUsed > 0 || pointsEarned > 0) {
+        const newBalance = availablePoints - pointsUsed + pointsEarned;
+        const newLifetime = (pointsData?.lifetime_earned || 0) + pointsEarned;
+        if (pointsData?.balance === undefined || availablePoints === 0) {
+          // No existing row
+          await supabase.from("kitabu_points").insert({
+            user_id: user.id, balance: newBalance, lifetime_earned: newLifetime,
+          } as any);
+        } else {
+          await supabase.from("kitabu_points")
+            .update({ balance: newBalance, lifetime_earned: newLifetime } as any)
+            .eq("user_id", user.id);
+        }
+      }
+
+
+
 
       setConfirmed(true);
       clearCart();
@@ -146,7 +211,7 @@ const Checkout = () => {
                     <p><span className="text-muted-foreground">{lang === "fr" ? "Titulaire :" : "Holder:"}</span> <strong>KitabuShop SARL</strong></p>
                     <p><span className="text-muted-foreground">{lang === "fr" ? "Numéro de compte :" : "Account:"}</span> <strong>05100-05101-01099918601-72</strong></p>
                     <p><span className="text-muted-foreground">SWIFT :</span> <strong>RAWBCDKI</strong></p>
-                    <p><span className="text-muted-foreground">{lang === "fr" ? "Montant :" : "Amount:"}</span> <strong className="text-primary text-lg">${total.toFixed(2)} USD</strong></p>
+                    <p><span className="text-muted-foreground">{lang === "fr" ? "Montant :" : "Amount:"}</span> <strong className="text-primary text-lg">${finalTotal.toFixed(2)} USD</strong></p>
                     <p><span className="text-muted-foreground">{lang === "fr" ? "Référence :" : "Reference:"}</span> <strong>KS-{Date.now().toString(36).toUpperCase()}</strong></p>
                   </div>
                 </div>
@@ -285,11 +350,75 @@ const Checkout = () => {
                   <span>{lang === "fr" ? "À confirmer" : "To confirm"}</span>
                 </div>
               )}
+
+              {/* Coupon */}
+              <div className="space-y-2 pt-2 border-t border-border">
+                <Label className="text-xs flex items-center gap-1.5"><Tag className="h-3.5 w-3.5" />{lang === "fr" ? "Code promo" : "Promo code"}</Label>
+                {appliedCoupon ? (
+                  <div className="flex items-center justify-between bg-accent/10 border border-accent/30 rounded-md px-3 py-2">
+                    <span className="text-sm font-mono font-bold text-accent">{appliedCoupon.code} (-{appliedCoupon.discount_percent}%)</span>
+                    <button onClick={() => setAppliedCoupon(null)} className="text-xs text-muted-foreground hover:text-destructive">×</button>
+                  </div>
+                ) : (
+                  <div className="flex gap-2">
+                    <input
+                      value={couponInput}
+                      onChange={(e) => setCouponInput(e.target.value.toUpperCase())}
+                      placeholder="WELCOME10"
+                      className="flex-1 h-9 px-3 text-sm bg-secondary border border-border rounded-md outline-none focus:ring-1 focus:ring-primary uppercase"
+                    />
+                    <Button size="sm" variant="outline" onClick={applyCoupon} disabled={applyingCoupon || !couponInput.trim()}>
+                      {applyingCoupon ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : (lang === "fr" ? "Appliquer" : "Apply")}
+                    </Button>
+                  </div>
+                )}
+              </div>
+
+              {/* Kitabu Points */}
+              {availablePoints >= 100 && (
+                <div className="flex items-center gap-3 p-3 rounded-md bg-primary/5 border border-primary/10">
+                  <Award className="h-5 w-5 text-primary shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-semibold">
+                      {lang === "fr" ? `Utiliser ${availablePoints} Kitabu Points` : `Use ${availablePoints} Kitabu Points`}
+                    </p>
+                    <p className="text-[10px] text-muted-foreground">
+                      {lang === "fr" ? `Réduction de $${maxPointsValue}` : `Save $${maxPointsValue}`}
+                    </p>
+                  </div>
+                  <Switch checked={usePoints} onCheckedChange={setUsePoints} />
+                </div>
+              )}
+
               <hr className="border-border" />
+              <div className="space-y-1 text-sm">
+                <div className="flex justify-between text-muted-foreground">
+                  <span>{lang === "fr" ? "Sous-total" : "Subtotal"}</span>
+                  <span className="tabular-nums">${subtotal.toFixed(2)}</span>
+                </div>
+                {couponDiscount > 0 && (
+                  <div className="flex justify-between text-accent">
+                    <span>{lang === "fr" ? "Coupon" : "Coupon"}</span>
+                    <span className="tabular-nums">−${couponDiscount.toFixed(2)}</span>
+                  </div>
+                )}
+                {pointsValue > 0 && (
+                  <div className="flex justify-between text-primary">
+                    <span>{lang === "fr" ? "Points utilisés" : "Points used"}</span>
+                    <span className="tabular-nums">−${pointsValue.toFixed(2)}</span>
+                  </div>
+                )}
+              </div>
               <div className="flex justify-between text-lg font-bold">
                 <span>Total</span>
-                <span className="text-primary tabular-nums">${total.toFixed(2)}</span>
+                <span className="text-primary tabular-nums">${finalTotal.toFixed(2)}</span>
               </div>
+              {pointsEarned > 0 && (
+                <p className="text-[11px] text-muted-foreground flex items-center gap-1">
+                  <Award className="h-3 w-3 text-primary" />
+                  {lang === "fr" ? `Vous gagnerez ${pointsEarned} Kitabu Points` : `You'll earn ${pointsEarned} Kitabu Points`}
+                </p>
+              )}
               <Button size="lg" className="w-full rounded-full" onClick={handleConfirm}
                 disabled={processing || !proofFile || (verificationResult?.valid === false && verificationResult?.confidence >= 80)}
               >
