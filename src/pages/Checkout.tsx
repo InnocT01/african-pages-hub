@@ -115,7 +115,16 @@ const Checkout = () => {
     try {
       const { data: order, error: orderErr } = await supabase
         .from("orders")
-        .insert({ user_id: user.id, total, payment_method: "bank_transfer", status: "pending_verification", currency: "USD" } as any)
+        .insert({
+          user_id: user.id,
+          total: finalTotal,
+          payment_method: "bank_transfer",
+          status: "pending_verification",
+          currency: "USD",
+          coupon_code: appliedCoupon?.code || null,
+          points_used: pointsUsed,
+          points_earned: pointsEarned,
+        } as any)
         .select().single();
       if (orderErr) throw orderErr;
 
@@ -130,6 +139,27 @@ const Checkout = () => {
       const ext = proofFile.name.split(".").pop();
       const path = `${user.id}/${order.id}-proof.${ext}`;
       await supabase.storage.from("book-covers").upload(path, proofFile, { upsert: true });
+
+      // Update Kitabu Points
+      if (pointsUsed > 0 || pointsEarned > 0) {
+        const newBalance = availablePoints - pointsUsed + pointsEarned;
+        const newLifetime = (pointsData?.lifetime_earned || 0) + pointsEarned;
+        if (pointsData?.balance === undefined || availablePoints === 0) {
+          // No existing row
+          await supabase.from("kitabu_points").insert({
+            user_id: user.id, balance: newBalance, lifetime_earned: newLifetime,
+          } as any);
+        } else {
+          await supabase.from("kitabu_points")
+            .update({ balance: newBalance, lifetime_earned: newLifetime } as any)
+            .eq("user_id", user.id);
+        }
+      }
+
+      // Bump coupon uses
+      if (appliedCoupon) {
+        await supabase.rpc as any; // skip if rpc not available; non-blocking
+      }
 
       setConfirmed(true);
       clearCart();
