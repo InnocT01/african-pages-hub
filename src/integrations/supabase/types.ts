@@ -14,6 +14,81 @@ export type Database = {
   }
   public: {
     Tables: {
+      author_follows: {
+        Row: {
+          author_id: string
+          created_at: string
+          follower_id: string
+          id: string
+        }
+        Insert: {
+          author_id: string
+          created_at?: string
+          follower_id: string
+          id?: string
+        }
+        Update: {
+          author_id?: string
+          created_at?: string
+          follower_id?: string
+          id?: string
+        }
+        Relationships: []
+      }
+      book_series: {
+        Row: {
+          author_id: string
+          cover_url: string | null
+          created_at: string
+          description: string | null
+          id: string
+          title: string
+        }
+        Insert: {
+          author_id: string
+          cover_url?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          title: string
+        }
+        Update: {
+          author_id?: string
+          cover_url?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          title?: string
+        }
+        Relationships: []
+      }
+      book_versions: {
+        Row: {
+          book_id: string
+          content_snapshot: Json | null
+          created_at: string
+          id: string
+          notes: string | null
+          version_number: number
+        }
+        Insert: {
+          book_id: string
+          content_snapshot?: Json | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          version_number?: number
+        }
+        Update: {
+          book_id?: string
+          content_snapshot?: Json | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          version_number?: number
+        }
+        Relationships: []
+      }
       books: {
         Row: {
           author_id: string
@@ -42,6 +117,9 @@ export type Database = {
           review_count: number | null
           sale_price: number | null
           sales_count: number | null
+          scheduled_publish_at: string | null
+          series_id: string | null
+          series_order: number | null
           status: string
           stock_count: number | null
           subtitle: string | null
@@ -75,6 +153,9 @@ export type Database = {
           review_count?: number | null
           sale_price?: number | null
           sales_count?: number | null
+          scheduled_publish_at?: string | null
+          series_id?: string | null
+          series_order?: number | null
           status?: string
           stock_count?: number | null
           subtitle?: string | null
@@ -108,6 +189,9 @@ export type Database = {
           review_count?: number | null
           sale_price?: number | null
           sales_count?: number | null
+          scheduled_publish_at?: string | null
+          series_id?: string | null
+          series_order?: number | null
           status?: string
           stock_count?: number | null
           subtitle?: string | null
@@ -147,6 +231,171 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      coupons: {
+        Row: {
+          active: boolean
+          code: string
+          created_at: string
+          discount_percent: number
+          expires_at: string | null
+          id: string
+          max_uses: number | null
+          uses_count: number
+        }
+        Insert: {
+          active?: boolean
+          code: string
+          created_at?: string
+          discount_percent: number
+          expires_at?: string | null
+          id?: string
+          max_uses?: number | null
+          uses_count?: number
+        }
+        Update: {
+          active?: boolean
+          code?: string
+          created_at?: string
+          discount_percent?: number
+          expires_at?: string | null
+          id?: string
+          max_uses?: number | null
+          uses_count?: number
+        }
+        Relationships: []
+      }
+      cover_ab_tests: {
+        Row: {
+          active: boolean
+          book_id: string
+          clicks_a: number
+          clicks_b: number
+          created_at: string
+          id: string
+          variant_a_url: string
+          variant_b_url: string
+          views_a: number
+          views_b: number
+        }
+        Insert: {
+          active?: boolean
+          book_id: string
+          clicks_a?: number
+          clicks_b?: number
+          created_at?: string
+          id?: string
+          variant_a_url: string
+          variant_b_url: string
+          views_a?: number
+          views_b?: number
+        }
+        Update: {
+          active?: boolean
+          book_id?: string
+          clicks_a?: number
+          clicks_b?: number
+          created_at?: string
+          id?: string
+          variant_a_url?: string
+          variant_b_url?: string
+          views_a?: number
+          views_b?: number
+        }
+        Relationships: []
+      }
+      gifts: {
+        Row: {
+          book_id: string
+          created_at: string
+          id: string
+          message: string | null
+          recipient_email: string
+          redeemed: boolean
+          redeemed_by: string | null
+          redemption_code: string
+          sender_id: string
+        }
+        Insert: {
+          book_id: string
+          created_at?: string
+          id?: string
+          message?: string | null
+          recipient_email: string
+          redeemed?: boolean
+          redeemed_by?: string | null
+          redemption_code: string
+          sender_id: string
+        }
+        Update: {
+          book_id?: string
+          created_at?: string
+          id?: string
+          message?: string | null
+          recipient_email?: string
+          redeemed?: boolean
+          redeemed_by?: string | null
+          redemption_code?: string
+          sender_id?: string
+        }
+        Relationships: []
+      }
+      kitabu_points: {
+        Row: {
+          balance: number
+          id: string
+          lifetime_earned: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          balance?: number
+          id?: string
+          lifetime_earned?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          balance?: number
+          id?: string
+          lifetime_earned?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      notifications: {
+        Row: {
+          body: string | null
+          created_at: string
+          id: string
+          link: string | null
+          read: boolean
+          title: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          body?: string | null
+          created_at?: string
+          id?: string
+          link?: string | null
+          read?: boolean
+          title: string
+          type: string
+          user_id: string
+        }
+        Update: {
+          body?: string | null
+          created_at?: string
+          id?: string
+          link?: string | null
+          read?: boolean
+          title?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       order_items: {
         Row: {
@@ -192,30 +441,39 @@ export type Database = {
       }
       orders: {
         Row: {
+          coupon_code: string | null
           created_at: string
           currency: string
           id: string
           payment_method: string | null
+          points_earned: number | null
+          points_used: number | null
           status: string
           total: number
           updated_at: string
           user_id: string
         }
         Insert: {
+          coupon_code?: string | null
           created_at?: string
           currency?: string
           id?: string
           payment_method?: string | null
+          points_earned?: number | null
+          points_used?: number | null
           status?: string
           total?: number
           updated_at?: string
           user_id: string
         }
         Update: {
+          coupon_code?: string | null
           created_at?: string
           currency?: string
           id?: string
           payment_method?: string | null
+          points_earned?: number | null
+          points_used?: number | null
           status?: string
           total?: number
           updated_at?: string
@@ -263,6 +521,87 @@ export type Database = {
           iban?: string | null
           id?: string
           phone?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      reading_list_items: {
+        Row: {
+          added_at: string
+          book_id: string
+          id: string
+          list_id: string
+        }
+        Insert: {
+          added_at?: string
+          book_id: string
+          id?: string
+          list_id: string
+        }
+        Update: {
+          added_at?: string
+          book_id?: string
+          id?: string
+          list_id?: string
+        }
+        Relationships: []
+      }
+      reading_lists: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          is_public: boolean
+          title: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_public?: boolean
+          title: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_public?: boolean
+          title?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      return_requests: {
+        Row: {
+          admin_notes: string | null
+          created_at: string
+          id: string
+          order_id: string
+          reason: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          admin_notes?: string | null
+          created_at?: string
+          id?: string
+          order_id: string
+          reason: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          admin_notes?: string | null
+          created_at?: string
+          id?: string
+          order_id?: string
+          reason?: string
+          status?: string
           updated_at?: string
           user_id?: string
         }
