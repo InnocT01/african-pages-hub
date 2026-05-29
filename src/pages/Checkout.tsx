@@ -156,10 +156,8 @@ const Checkout = () => {
         }
       }
 
-      // Bump coupon uses
-      if (appliedCoupon) {
-        await supabase.rpc as any; // skip if rpc not available; non-blocking
-      }
+
+
 
       setConfirmed(true);
       clearCart();
