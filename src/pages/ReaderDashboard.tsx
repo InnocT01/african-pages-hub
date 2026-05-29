@@ -6,6 +6,7 @@ import { useCurrency } from "@/contexts/CurrencyContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useKitabuPoints } from "@/hooks/useKitabuPoints";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -27,6 +28,7 @@ const ReaderDashboard = () => {
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState("overview");
   const queryClient = useQueryClient();
+  const { data: points } = useKitabuPoints();
 
   // Data queries
   const { data: orders = [] } = useQuery({
@@ -203,7 +205,7 @@ const ReaderDashboard = () => {
                 {[
                   { icon: BookOpen, value: totalBooks, label: lang === "fr" ? "Livres" : "Books", color: "text-primary" },
                   { icon: ShoppingBag, value: orders.length, label: lang === "fr" ? "Commandes" : "Orders", color: "text-accent" },
-                  { icon: CreditCard, value: formatPrice(totalSpent), label: lang === "fr" ? "Dépensé" : "Spent", color: "text-foreground" },
+                  { icon: Award, value: points?.balance ?? 0, label: "Kitabu Points", color: "text-primary" },
                   { icon: Star, value: avgRating.toFixed(1), label: lang === "fr" ? "Note moy." : "Avg Rating", color: "text-primary" },
                 ].map((stat, i) => (
                   <Card key={i} className="border-border/50 hover:shadow-md transition-shadow">
