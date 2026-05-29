@@ -5,6 +5,8 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import BookGrid from "@/components/BookGrid";
 import BookReader from "@/components/BookReader";
+import FollowAuthorButton from "@/components/FollowAuthorButton";
+import GiftBookDialog from "@/components/GiftBookDialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -146,9 +148,11 @@ const BookDetail = () => {
               </div>
               <h1 className="text-3xl font-extrabold md:text-4xl font-display">{book.title}</h1>
               {book.subtitle && <p className="text-lg text-muted-foreground mt-1">{book.subtitle}</p>}
-              <p className="text-lg text-muted-foreground mt-1">
-                {t("book.by")}{" "}
-                <Link to={`/author/${book.author_id}`} className="text-primary font-medium hover:underline">{book.author_name || "Auteur"}</Link>
+              <p className="text-lg text-muted-foreground mt-1 flex items-center gap-2 flex-wrap">
+                <span>{t("book.by")}{" "}
+                  <Link to={`/author/${book.author_id}`} className="text-primary font-medium hover:underline">{book.author_name || "Auteur"}</Link>
+                </span>
+                <FollowAuthorButton authorId={book.author_id} />
               </p>
               <p className="text-sm text-muted-foreground mt-1">{book.origin} · {book.genre}</p>
             </div>
@@ -241,6 +245,8 @@ const BookDetail = () => {
                 <Heart className={`h-4 w-4 ${isInWishlist ? "fill-destructive text-destructive" : ""}`} />
                 {isInWishlist ? (lang === "fr" ? "Dans ma liste" : "In Wishlist") : (lang === "fr" ? "Favoris" : "Wishlist")}
               </Button>
+
+              <GiftBookDialog bookId={book.id} bookTitle={book.title} />
 
               <Button variant="ghost" className="rounded-full gap-2" onClick={handleShare}>
                 <Share2 className="h-4 w-4" />{lang === "fr" ? "Partager" : "Share"}
