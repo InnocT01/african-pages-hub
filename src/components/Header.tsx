@@ -115,6 +115,14 @@ const Header = () => {
                 </Link>
               )}
 
+              {/* Theme toggle */}
+              <button onClick={toggleTheme} aria-label="Toggle theme" className="hidden sm:flex items-center p-2 hover:text-primary transition-colors">
+                {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+              </button>
+
+              {/* Notifications */}
+              <NotificationBell />
+
               {/* Wishlist */}
               <Link to={isAuthenticated ? "/reader" : "/login"} aria-label="Wishlist" className="hidden sm:flex items-center p-2 hover:text-primary transition-colors">
                 <Heart className="h-4 w-4" />
