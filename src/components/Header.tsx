@@ -1,11 +1,13 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Search, ShoppingCart, Menu, X, Globe, ChevronDown, PenTool, DollarSign, Heart } from "lucide-react";
+import { Search, ShoppingCart, Menu, X, Globe, ChevronDown, PenTool, DollarSign, Heart, Sun, Moon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useCurrency, currencies } from "@/contexts/CurrencyContext";
 import { useCart } from "@/contexts/CartContext";
 import { useAuth } from "@/contexts/AuthContext";
+import { useTheme } from "@/contexts/ThemeContext";
+import NotificationBell from "@/components/NotificationBell";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 
 const Header = () => {
@@ -13,6 +15,7 @@ const Header = () => {
   const { currency, setCurrency } = useCurrency();
   const { itemCount } = useCart();
   const { user, isAuthenticated, logout } = useAuth();
+  const { theme, toggleTheme } = useTheme();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchFocused, setSearchFocused] = useState(false);
@@ -111,6 +114,14 @@ const Header = () => {
                   <span>KDP</span>
                 </Link>
               )}
+
+              {/* Theme toggle */}
+              <button onClick={toggleTheme} aria-label="Toggle theme" className="hidden sm:flex items-center p-2 hover:text-primary transition-colors">
+                {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+              </button>
+
+              {/* Notifications */}
+              <NotificationBell />
 
               {/* Wishlist */}
               <Link to={isAuthenticated ? "/reader" : "/login"} aria-label="Wishlist" className="hidden sm:flex items-center p-2 hover:text-primary transition-colors">
