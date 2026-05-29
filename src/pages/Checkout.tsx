@@ -12,8 +12,9 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { CreditCard, CheckCircle, ArrowLeft, Loader2, Truck, ImageIcon, AlertCircle, Shield, XCircle, AlertTriangle } from "lucide-react";
+import { CreditCard, CheckCircle, ArrowLeft, Loader2, Truck, ImageIcon, AlertCircle, Shield, XCircle, AlertTriangle, Tag, Award } from "lucide-react";
 import { toast } from "sonner";
+import { useKitabuPoints } from "@/hooks/useKitabuPoints";
 
 const Checkout = () => {
   const { t, lang } = useLanguage();
@@ -28,8 +29,44 @@ const Checkout = () => {
   const [verifying, setVerifying] = useState(false);
   const [verificationResult, setVerificationResult] = useState<any>(null);
   const proofRef = useRef<HTMLInputElement>(null);
+  const { data: pointsData } = useKitabuPoints();
+
+  // Coupon state
+  const [couponInput, setCouponInput] = useState("");
+  const [appliedCoupon, setAppliedCoupon] = useState<{ code: string; discount_percent: number } | null>(null);
+  const [applyingCoupon, setApplyingCoupon] = useState(false);
+
+  // Points redemption: 100 points = 1 USD
+  const [usePoints, setUsePoints] = useState(false);
+  const availablePoints = pointsData?.balance || 0;
+  const maxPointsValue = Math.floor(availablePoints / 100);
+
+  const subtotal = total;
+  const couponDiscount = appliedCoupon ? (subtotal * appliedCoupon.discount_percent) / 100 : 0;
+  const afterCoupon = Math.max(0, subtotal - couponDiscount);
+  const pointsValue = usePoints ? Math.min(maxPointsValue, afterCoupon) : 0;
+  const pointsUsed = pointsValue * 100;
+  const finalTotal = Math.max(0, afterCoupon - pointsValue);
+  const pointsEarned = Math.floor(finalTotal);
 
   const hasPhysicalItems = items.some(i => i.book.format === "paperback" || i.book.format === "both");
+
+  const applyCoupon = async () => {
+    if (!couponInput.trim()) return;
+    setApplyingCoupon(true);
+    const { data, error } = await supabase
+      .from("coupons")
+      .select("code,discount_percent,active,expires_at,max_uses,uses_count")
+      .eq("code", couponInput.trim().toUpperCase())
+      .eq("active", true)
+      .maybeSingle();
+    setApplyingCoupon(false);
+    if (error || !data) { toast.error(lang === "fr" ? "Coupon invalide" : "Invalid coupon"); return; }
+    if (data.expires_at && new Date(data.expires_at) < new Date()) { toast.error(lang === "fr" ? "Coupon expiré" : "Coupon expired"); return; }
+    if (data.max_uses && data.uses_count >= data.max_uses) { toast.error(lang === "fr" ? "Coupon épuisé" : "Coupon limit reached"); return; }
+    setAppliedCoupon({ code: data.code, discount_percent: data.discount_percent });
+    toast.success(lang === "fr" ? `-${data.discount_percent}% appliqué !` : `-${data.discount_percent}% applied!`);
+  };
 
   const handleProofChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
