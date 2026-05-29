@@ -72,6 +72,7 @@ const App = () => (
       </AuthProvider>
       </CurrencyProvider>
     </LanguageProvider>
+    </ThemeProvider>
   </QueryClientProvider>
 );
 
