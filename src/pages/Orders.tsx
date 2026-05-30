@@ -185,8 +185,7 @@ const Orders = () => {
               icon={Package}
               title={lang === "fr" ? "Commande introuvable" : "Order not found"}
               description={lang === "fr" ? "Cette commande n'existe pas ou ne vous appartient pas." : "This order doesn't exist or doesn't belong to you."}
-              actionLabel={lang === "fr" ? "Voir mes commandes" : "View my orders"}
-              onAction={() => navigate("/orders")}
+              action={{ label: lang === "fr" ? "Voir mes commandes" : "View my orders", onClick: () => navigate("/orders") }}
             />
           </main>
           <Footer />
