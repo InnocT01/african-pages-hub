@@ -27,6 +27,7 @@ import Privacy from "./pages/Privacy";
 import NotFound from "./pages/NotFound";
 import AuthorProfile from "./pages/AuthorProfile";
 import HelpCenter from "./pages/HelpCenter";
+import Orders from "./pages/Orders";
 
 const queryClient = new QueryClient();
 
