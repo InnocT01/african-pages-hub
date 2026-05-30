@@ -358,8 +358,7 @@ const Orders = () => {
             icon={ShoppingBag}
             title={lang === "fr" ? "Aucune commande pour l'instant" : "No orders yet"}
             description={lang === "fr" ? "Explorez le catalogue et passez votre première commande." : "Browse the catalog and place your first order."}
-            actionLabel={lang === "fr" ? "Voir le catalogue" : "Browse catalog"}
-            onAction={() => navigate("/catalog")}
+            action={{ label: lang === "fr" ? "Voir le catalogue" : "Browse catalog", onClick: () => navigate("/catalog") }}
           />
         ) : (
           <div className="space-y-3">
