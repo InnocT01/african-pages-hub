@@ -137,6 +137,7 @@ const Header = () => {
                     </div>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem asChild className="rounded-none"><Link to={dashboardPath}>{t("nav.dashboard")}</Link></DropdownMenuItem>
+                    <DropdownMenuItem asChild className="rounded-none"><Link to="/orders">{lang === "fr" ? "Mes commandes" : "My orders"}</Link></DropdownMenuItem>
                     {user?.role === "creator" && (
                       <DropdownMenuItem asChild className="rounded-none">
                         <Link to="/creator?tab=upload" className="flex items-center gap-2">
