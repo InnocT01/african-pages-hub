@@ -11,6 +11,7 @@ import { ThemeProvider } from "@/contexts/ThemeContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import ScrollProgress from "@/components/ScrollProgress";
 import CommandPalette from "@/components/CommandPalette";
+import BrandSplash from "@/components/BrandSplash";
 import Index from "./pages/Index";
 import Catalog from "./pages/Catalog";
 import BookDetail from "./pages/BookDetail";
@@ -40,6 +41,7 @@ const App = () => (
             <Toaster />
             <Sonner />
             <BrowserRouter>
+              <BrandSplash />
               <ScrollProgress />
               <CommandPalette />
               <Routes>

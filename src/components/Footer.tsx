@@ -1,11 +1,24 @@
 import { Link } from "react-router-dom";
+import { useState } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Mail, Phone, MapPin, Facebook, Twitter, Instagram, ArrowUp, Heart } from "lucide-react";
+import { toast } from "sonner";
 
 const Footer = () => {
   const { t, lang } = useLanguage();
+  const [email, setEmail] = useState("");
+
+  const handleSubscribe = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email || !/\S+@\S+\.\S+/.test(email)) {
+      toast.error(lang === "fr" ? "Email invalide" : "Invalid email");
+      return;
+    }
+    toast.success(lang === "fr" ? "Bienvenue dans la famille Kitabu ! 📚" : "Welcome to the Kitabu family! 📚");
+    setEmail("");
+  };
 
   return (
     <footer className="mt-24">
@@ -33,16 +46,19 @@ const Footer = () => {
                   : "The reference platform for authentic African literature. We connect the voices of yesterday and tomorrow."}
               </p>
             </div>
-            <div className="w-full max-w-sm space-y-3">
+            <form onSubmit={handleSubscribe} className="w-full max-w-sm space-y-3">
               <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-background/50">Newsletter</p>
               <div className="flex border-b border-background/20 pb-1">
                 <Input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   placeholder={t("footer.newsletter.placeholder")}
                   className="h-10 text-sm bg-transparent border-0 text-background placeholder:text-background/30 rounded-none focus-visible:ring-0 px-0"
                 />
-                <Button className="rounded-none shrink-0 h-10 px-5 bg-transparent hover:bg-transparent text-accent hover:text-background font-bold text-xs uppercase tracking-widest">OK</Button>
+                <Button type="submit" className="rounded-none shrink-0 h-10 px-5 bg-transparent hover:bg-transparent text-accent hover:text-background font-bold text-xs uppercase tracking-widest">OK</Button>
               </div>
-            </div>
+            </form>
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-10 py-12">

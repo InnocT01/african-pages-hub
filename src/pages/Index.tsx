@@ -5,6 +5,9 @@ import HeroSection from "@/components/HeroSection";
 import FilterBar from "@/components/FilterBar";
 import BookGrid from "@/components/BookGrid";
 import CreatorCTA from "@/components/CreatorCTA";
+import TrustStrip from "@/components/TrustStrip";
+import AfricaShowcase from "@/components/AfricaShowcase";
+import ProverbBanner from "@/components/ProverbBanner";
 import { useBooks } from "@/hooks/useBooks";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useRecentlyViewed } from "@/hooks/useRecentlyViewed";
@@ -69,6 +72,7 @@ const Index = () => {
     <div className="min-h-screen flex flex-col bg-background">
       <Header />
       <HeroSection />
+      <TrustStrip />
       <main className="flex-1">
         <div className="container mx-auto px-4 lg:px-8 py-16">
           <div className="flex gap-10">
@@ -124,11 +128,16 @@ const Index = () => {
                     <BookGrid title={lang === "fr" ? "Consultés récemment" : "Recently Viewed"} books={recentlyViewed} />
                   )}
 
+                  <AfricaShowcase />
+
                   <CreatorCTA />
 
                   <BookGrid title={t("section.literature")} books={literature} categoryLink="/catalog?category=literature" />
                   <BookGrid title={t("section.education")} books={education} categoryLink="/catalog?category=education" />
                   <BookGrid title={t("section.youth")} books={youth} categoryLink="/catalog?category=youth" />
+
+                  <ProverbBanner />
+
                   <BookGrid title={t("section.diaspora")} books={diaspora} categoryLink="/catalog?category=diaspora" />
                 </>
               )}
