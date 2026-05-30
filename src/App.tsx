@@ -27,6 +27,7 @@ import Privacy from "./pages/Privacy";
 import NotFound from "./pages/NotFound";
 import AuthorProfile from "./pages/AuthorProfile";
 import HelpCenter from "./pages/HelpCenter";
+import Orders from "./pages/Orders";
 
 const queryClient = new QueryClient();
 
@@ -52,6 +53,10 @@ const App = () => (
                 <Route path="/signup" element={<Signup />} />
                 <Route path="/cart" element={<Cart />} />
                 <Route path="/checkout" element={<Checkout />} />
+                <Route element={<ProtectedRoute />}>
+                  <Route path="/orders" element={<Orders />} />
+                  <Route path="/orders/:id" element={<Orders />} />
+                </Route>
 
                 <Route element={<ProtectedRoute requiredRole="creator" />}>
                   <Route path="/creator" element={<CreatorDashboard />} />
